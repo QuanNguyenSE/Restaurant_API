@@ -1,10 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Restaurant.API.Models
+namespace Restaurant.API.Models.DTO
 {
-    public class MenuItem
+    public class MenuItemDTO
     {
-        [Key]
         public int Id { get; set; }
         [Required]
         public string Name { get; set; }

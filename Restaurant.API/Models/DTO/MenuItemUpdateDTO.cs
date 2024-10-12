@@ -1,10 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.ComponentModel.DataAnnotations;
 
-namespace Restaurant.API.Models
+namespace Restaurant.API.Models.DTO
 {
-    public class MenuItem
+    public class MenuItemUpdateDTO
     {
-        [Key]
         public int Id { get; set; }
         [Required]
         public string Name { get; set; }
@@ -14,7 +14,7 @@ namespace Restaurant.API.Models
         [Range(1, int.MaxValue)]
         [Required]
         public double Price { get; set; }
-        [Required]
-        public string ImageUrl { get; set; }
+        [ValidateNever]
+        public IFormFile Image { get; set; }
     }
 }
