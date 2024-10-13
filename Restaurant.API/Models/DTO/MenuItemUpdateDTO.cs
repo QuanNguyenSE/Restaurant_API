@@ -5,6 +5,7 @@ namespace Restaurant.API.Models.DTO
 {
     public class MenuItemUpdateDTO
     {
+        [Key]
         public int Id { get; set; }
         [Required]
         public string Name { get; set; }
@@ -15,6 +16,6 @@ namespace Restaurant.API.Models.DTO
         [Required]
         public double Price { get; set; }
         [ValidateNever]
-        public IFormFile Image { get; set; }
+        public IFormFile? Image { get; set; }
     }
 }

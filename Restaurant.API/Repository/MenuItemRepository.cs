@@ -11,10 +11,10 @@ namespace Restaurant.API.Repository
         {
             _db = db;
         }
-        public async Task Update(MenuItem obj)
+        public async Task<MenuItem> UpdateAsync(MenuItem entity)
         {
-            _db.MenuItems.Update(obj);
-
+            _db.MenuItems.Update(entity);
+            return entity;
         }
     }
 }
