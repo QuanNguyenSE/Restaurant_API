@@ -14,7 +14,6 @@ namespace Restaurant.API.Controllers
         protected APIResponse _response;
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly IMapper _mapper;
-
         private readonly IUnitOfWork _unitOfWork;
 
 
