@@ -69,11 +69,19 @@ namespace Restaurant.API.Controllers
             {
                 if (ModelState.IsValid)
                 {
+                    Category category = await _unitOfWork.Category.GetAsync(u => u.Id == menuItemDTO.CategoryId);
+                    if (category == null)
+                    {
+                        _response.IsSuccess = false;
+                        _response.StatusCode = HttpStatusCode.BadRequest;
+                        _response.ErrorMessages.Add("Category is not valid");
+                    }
                     if (menuItemDTO.Image == null || menuItemDTO.Image.Length == 0)
                     {
                         _response.IsSuccess = false;
                         _response.StatusCode = HttpStatusCode.BadRequest;
                         _response.ErrorMessages.Add("Image is require");
+                        return _response;
                     }
 
                     string wwwRootPath = _webHostEnvironment.WebRootPath;
@@ -139,11 +147,16 @@ namespace Restaurant.API.Controllers
                         _response.StatusCode = HttpStatusCode.NotFound;
                         _response.ErrorMessages.Add("MenuItem not found");
                     }
-
+                    Category category = await _unitOfWork.Category.GetAsync(u => u.Id == menuItemDTO.CategoryId);
+                    if (category == null)
+                    {
+                        _response.IsSuccess = false;
+                        _response.StatusCode = HttpStatusCode.BadRequest;
+                        _response.ErrorMessages.Add("Category is not valid");
+                    }
                     //update
                     menuItem.Name = menuItemDTO.Name;
                     menuItem.Price = menuItemDTO.Price;
-                    menuItem.Category = menuItemDTO.Category;
                     menuItem.SpecialTag = menuItemDTO.SpecialTag;
                     menuItem.Description = menuItemDTO.Description;
 
@@ -209,6 +222,7 @@ namespace Restaurant.API.Controllers
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.NotFound;
                     _response.ErrorMessages.Add("MenuItem not found");
+                    return _response;
                 }
 
                 string wwwRootPath = _webHostEnvironment.WebRootPath;

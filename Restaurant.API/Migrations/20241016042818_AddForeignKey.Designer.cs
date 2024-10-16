@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Restaurant.API.Data;
 
@@ -11,9 +12,11 @@ using Restaurant.API.Data;
 namespace Restaurant.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241016042818_AddForeignKey")]
+    partial class AddForeignKey
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -319,108 +322,6 @@ namespace Restaurant.API.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("MenuItems");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CategoryId = 1,
-                            Description = "Fusc tincidunt maximus leo, sed scelerisque massa auctor sit amet. Donec ex mauris, hendrerit quis nibh ac, efficitur fringilla enim.",
-                            ImageUrl = "\\images\\menuitem\\spring roll.jpg",
-                            Name = "Spring Roll",
-                            Price = 7.9900000000000002,
-                            SpecialTag = ""
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CategoryId = 1,
-                            Description = "Fusc tincidunt maximus leo, sed scelerisque massa auctor sit amet. Donec ex mauris, hendrerit quis nibh ac, efficitur fringilla enim.",
-                            ImageUrl = "\\images\\menuitem\\idli.jpg",
-                            Name = "Idli",
-                            Price = 8.9900000000000002,
-                            SpecialTag = ""
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CategoryId = 1,
-                            Description = "Fusc tincidunt maximus leo, sed scelerisque massa auctor sit amet. Donec ex mauris, hendrerit quis nibh ac, efficitur fringilla enim.",
-                            ImageUrl = "\\images\\menuitem\\pani puri.jpg",
-                            Name = "Panu Puri",
-                            Price = 8.9900000000000002,
-                            SpecialTag = "Best Seller"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            CategoryId = 2,
-                            Description = "Fusc tincidunt maximus leo, sed scelerisque massa auctor sit amet. Donec ex mauris, hendrerit quis nibh ac, efficitur fringilla enim.",
-                            ImageUrl = "\\images\\menuitem\\hakka noodles.jpg",
-                            Name = "Hakka Noodles",
-                            Price = 10.99,
-                            SpecialTag = ""
-                        },
-                        new
-                        {
-                            Id = 5,
-                            CategoryId = 2,
-                            Description = "Fusc tincidunt maximus leo, sed scelerisque massa auctor sit amet. Donec ex mauris, hendrerit quis nibh ac, efficitur fringilla enim.",
-                            ImageUrl = "\\images\\menuitem\\malai kofta.jpg",
-                            Name = "Malai Kofta",
-                            Price = 12.99,
-                            SpecialTag = "Top Rated"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            CategoryId = 2,
-                            Description = "Fusc tincidunt maximus leo, sed scelerisque massa auctor sit amet. Donec ex mauris, hendrerit quis nibh ac, efficitur fringilla enim.",
-                            ImageUrl = "\\images\\menuitem\\paneer pizza.jpg",
-                            Name = "Paneer Pizza",
-                            Price = 11.99,
-                            SpecialTag = ""
-                        },
-                        new
-                        {
-                            Id = 7,
-                            CategoryId = 2,
-                            Description = "Fusc tincidunt maximus leo, sed scelerisque massa auctor sit amet. Donec ex mauris, hendrerit quis nibh ac, efficitur fringilla enim.",
-                            ImageUrl = "\\images\\menuitem\\paneer tikka.jpg",
-                            Name = "Paneer Tikka",
-                            Price = 13.99,
-                            SpecialTag = "Chef's Special"
-                        },
-                        new
-                        {
-                            Id = 8,
-                            CategoryId = 3,
-                            Description = "Fusc tincidunt maximus leo, sed scelerisque massa auctor sit amet. Donec ex mauris, hendrerit quis nibh ac, efficitur fringilla enim.",
-                            ImageUrl = "\\images\\menuitem\\carrot love.jpg",
-                            Name = "Carrot Love",
-                            Price = 4.9900000000000002,
-                            SpecialTag = ""
-                        },
-                        new
-                        {
-                            Id = 9,
-                            CategoryId = 3,
-                            Description = "Fusc tincidunt maximus leo, sed scelerisque massa auctor sit amet. Donec ex mauris, hendrerit quis nibh ac, efficitur fringilla enim.",
-                            ImageUrl = "\\images\\menuitem\\rasmalai.jpg",
-                            Name = "Rasmalai",
-                            Price = 4.9900000000000002,
-                            SpecialTag = "Chef's Special"
-                        },
-                        new
-                        {
-                            Id = 10,
-                            CategoryId = 3,
-                            Description = "Fusc tincidunt maximus leo, sed scelerisque massa auctor sit amet. Donec ex mauris, hendrerit quis nibh ac, efficitur fringilla enim.",
-                            ImageUrl = "\\images\\menuitem\\sweet rolls.jpg",
-                            Name = "Sweet Rolls",
-                            Price = 3.9900000000000002,
-                            SpecialTag = "Top Rated"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

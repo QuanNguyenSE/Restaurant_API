@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Restaurant.API.Data;
 
@@ -11,9 +12,11 @@ using Restaurant.API.Data;
 namespace Restaurant.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241016040938_SeedCategories")]
+    partial class SeedCategories
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -294,8 +297,8 @@ namespace Restaurant.API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("int");
+                    b.Property<string>("Category")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
@@ -316,17 +319,15 @@ namespace Restaurant.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryId");
-
                     b.ToTable("MenuItems");
 
                     b.HasData(
                         new
                         {
                             Id = 1,
-                            CategoryId = 1,
+                            Category = "Appetizer",
                             Description = "Fusc tincidunt maximus leo, sed scelerisque massa auctor sit amet. Donec ex mauris, hendrerit quis nibh ac, efficitur fringilla enim.",
-                            ImageUrl = "\\images\\menuitem\\spring roll.jpg",
+                            ImageUrl = "https://",
                             Name = "Spring Roll",
                             Price = 7.9900000000000002,
                             SpecialTag = ""
@@ -334,9 +335,9 @@ namespace Restaurant.API.Migrations
                         new
                         {
                             Id = 2,
-                            CategoryId = 1,
+                            Category = "Appetizer",
                             Description = "Fusc tincidunt maximus leo, sed scelerisque massa auctor sit amet. Donec ex mauris, hendrerit quis nibh ac, efficitur fringilla enim.",
-                            ImageUrl = "\\images\\menuitem\\idli.jpg",
+                            ImageUrl = "https://",
                             Name = "Idli",
                             Price = 8.9900000000000002,
                             SpecialTag = ""
@@ -344,9 +345,9 @@ namespace Restaurant.API.Migrations
                         new
                         {
                             Id = 3,
-                            CategoryId = 1,
+                            Category = "Appetizer",
                             Description = "Fusc tincidunt maximus leo, sed scelerisque massa auctor sit amet. Donec ex mauris, hendrerit quis nibh ac, efficitur fringilla enim.",
-                            ImageUrl = "\\images\\menuitem\\pani puri.jpg",
+                            ImageUrl = "https://",
                             Name = "Panu Puri",
                             Price = 8.9900000000000002,
                             SpecialTag = "Best Seller"
@@ -354,9 +355,9 @@ namespace Restaurant.API.Migrations
                         new
                         {
                             Id = 4,
-                            CategoryId = 2,
+                            Category = "Entrée",
                             Description = "Fusc tincidunt maximus leo, sed scelerisque massa auctor sit amet. Donec ex mauris, hendrerit quis nibh ac, efficitur fringilla enim.",
-                            ImageUrl = "\\images\\menuitem\\hakka noodles.jpg",
+                            ImageUrl = "https://",
                             Name = "Hakka Noodles",
                             Price = 10.99,
                             SpecialTag = ""
@@ -364,9 +365,9 @@ namespace Restaurant.API.Migrations
                         new
                         {
                             Id = 5,
-                            CategoryId = 2,
+                            Category = "Entrée",
                             Description = "Fusc tincidunt maximus leo, sed scelerisque massa auctor sit amet. Donec ex mauris, hendrerit quis nibh ac, efficitur fringilla enim.",
-                            ImageUrl = "\\images\\menuitem\\malai kofta.jpg",
+                            ImageUrl = "https://",
                             Name = "Malai Kofta",
                             Price = 12.99,
                             SpecialTag = "Top Rated"
@@ -374,9 +375,9 @@ namespace Restaurant.API.Migrations
                         new
                         {
                             Id = 6,
-                            CategoryId = 2,
+                            Category = "Entrée",
                             Description = "Fusc tincidunt maximus leo, sed scelerisque massa auctor sit amet. Donec ex mauris, hendrerit quis nibh ac, efficitur fringilla enim.",
-                            ImageUrl = "\\images\\menuitem\\paneer pizza.jpg",
+                            ImageUrl = "https://",
                             Name = "Paneer Pizza",
                             Price = 11.99,
                             SpecialTag = ""
@@ -384,9 +385,9 @@ namespace Restaurant.API.Migrations
                         new
                         {
                             Id = 7,
-                            CategoryId = 2,
+                            Category = "Entrée",
                             Description = "Fusc tincidunt maximus leo, sed scelerisque massa auctor sit amet. Donec ex mauris, hendrerit quis nibh ac, efficitur fringilla enim.",
-                            ImageUrl = "\\images\\menuitem\\paneer tikka.jpg",
+                            ImageUrl = "https://",
                             Name = "Paneer Tikka",
                             Price = 13.99,
                             SpecialTag = "Chef's Special"
@@ -394,9 +395,9 @@ namespace Restaurant.API.Migrations
                         new
                         {
                             Id = 8,
-                            CategoryId = 3,
+                            Category = "Dessert",
                             Description = "Fusc tincidunt maximus leo, sed scelerisque massa auctor sit amet. Donec ex mauris, hendrerit quis nibh ac, efficitur fringilla enim.",
-                            ImageUrl = "\\images\\menuitem\\carrot love.jpg",
+                            ImageUrl = "https://",
                             Name = "Carrot Love",
                             Price = 4.9900000000000002,
                             SpecialTag = ""
@@ -404,9 +405,9 @@ namespace Restaurant.API.Migrations
                         new
                         {
                             Id = 9,
-                            CategoryId = 3,
+                            Category = "Dessert",
                             Description = "Fusc tincidunt maximus leo, sed scelerisque massa auctor sit amet. Donec ex mauris, hendrerit quis nibh ac, efficitur fringilla enim.",
-                            ImageUrl = "\\images\\menuitem\\rasmalai.jpg",
+                            ImageUrl = "https://",
                             Name = "Rasmalai",
                             Price = 4.9900000000000002,
                             SpecialTag = "Chef's Special"
@@ -414,9 +415,9 @@ namespace Restaurant.API.Migrations
                         new
                         {
                             Id = 10,
-                            CategoryId = 3,
+                            Category = "Dessert",
                             Description = "Fusc tincidunt maximus leo, sed scelerisque massa auctor sit amet. Donec ex mauris, hendrerit quis nibh ac, efficitur fringilla enim.",
-                            ImageUrl = "\\images\\menuitem\\sweet rolls.jpg",
+                            ImageUrl = "https://",
                             Name = "Sweet Rolls",
                             Price = 3.9900000000000002,
                             SpecialTag = "Top Rated"
@@ -472,17 +473,6 @@ namespace Restaurant.API.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Restaurant.API.Models.MenuItem", b =>
-                {
-                    b.HasOne("Restaurant.API.Models.Category", "Category")
-                        .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Category");
                 });
 #pragma warning restore 612, 618
         }
