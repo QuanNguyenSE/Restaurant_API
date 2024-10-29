@@ -9,6 +9,9 @@ namespace Restaurant.API.Data
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
         public DbSet<MenuItem> MenuItems { get; set; }
         public DbSet<Category> Categories { get; set; }
+        public DbSet<ShoppingCart> ShoppingCarts { get; set; }
+        public DbSet<CartItem> CartItems { get; set; }
+
 
         public ApplicationDbContext(DbContextOptions options) : base(options)
         {
