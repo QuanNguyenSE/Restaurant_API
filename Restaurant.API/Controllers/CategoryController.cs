@@ -29,7 +29,7 @@ namespace Restaurant.API.Controllers
             IEnumerable<Category> categories = await _unitOfWork.Category.GetAllAsync();
             _response.Result = _mapper.Map<IEnumerable<CategoryDTO>>(categories);
             _response.StatusCode = HttpStatusCode.OK;
-            return _response;
+            return Ok(_response);
         }
         [HttpGet("{id:int}", Name = "GetCategory")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -42,7 +42,7 @@ namespace Restaurant.API.Controllers
                 _response.IsSuccess = false;
                 _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages.Add("id not valid");
-                return _response;
+                return BadRequest(_response);
             }
             Category category = await _unitOfWork.Category.GetAsync(u => u.Id == id);
             _response.Result = _mapper.Map<CategoryDTO>(category);
@@ -51,16 +51,15 @@ namespace Restaurant.API.Controllers
                 _response.IsSuccess = false;
                 _response.StatusCode = HttpStatusCode.NotFound;
                 _response.ErrorMessages.Add("Not found");
-                return _response;
+                return NotFound(_response);
             }
             _response.StatusCode = HttpStatusCode.OK;
-            return _response;
+            return Ok(_response);
         }
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<APIResponse>> CreateCategory([FromForm] CategoryCreateDTO categoryDTO)
         {
             try
@@ -92,7 +91,7 @@ namespace Restaurant.API.Controllers
                 _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages = new List<string>() { ex.ToString() };
             }
-            return _response;
+            return BadRequest(_response);
         }
         [HttpPut("{id:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -109,6 +108,7 @@ namespace Restaurant.API.Controllers
                         _response.IsSuccess = false;
                         _response.StatusCode = HttpStatusCode.BadRequest;
                         _response.ErrorMessages.Add("Category not found");
+                        return BadRequest(_response);
                     }
 
                     Category category = await _unitOfWork.Category.GetAsync(u => u.Id == id, tracking: false);
@@ -118,6 +118,7 @@ namespace Restaurant.API.Controllers
                         _response.IsSuccess = false;
                         _response.StatusCode = HttpStatusCode.NotFound;
                         _response.ErrorMessages.Add("Category not found");
+                        return NotFound(_response);
                     }
 
                     //update
@@ -129,6 +130,7 @@ namespace Restaurant.API.Controllers
 
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.NoContent;
+                    return Ok(_response);
                 }
                 else
                 {
@@ -144,7 +146,7 @@ namespace Restaurant.API.Controllers
                 _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages = new List<string>() { ex.ToString() };
             }
-            return _response;
+            return BadRequest(_response);
         }
         [HttpDelete("{id:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -160,6 +162,7 @@ namespace Restaurant.API.Controllers
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.ErrorMessages.Add("Id not valid");
+                    return BadRequest(_response);
                 }
 
                 Category category = await _unitOfWork.Category.GetAsync(u => u.Id == id);
@@ -177,6 +180,7 @@ namespace Restaurant.API.Controllers
 
                 _response.IsSuccess = true;
                 _response.StatusCode = HttpStatusCode.NoContent;
+                return Ok(_response);
             }
             catch (Exception ex)
             {
@@ -184,7 +188,7 @@ namespace Restaurant.API.Controllers
                 _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages = new List<string>() { ex.ToString() };
             }
-            return _response;
+            return BadRequest(_response);
         }
 
 
