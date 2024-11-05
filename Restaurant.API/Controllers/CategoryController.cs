@@ -7,6 +7,7 @@ using System.Net;
 
 namespace Restaurant.API.Controllers
 {
+    //[Authorize(Roles = SD.Role_Admin)]
     [Route("api/[controller]")]
     [ApiController]
     public class CategoryController : ControllerBase

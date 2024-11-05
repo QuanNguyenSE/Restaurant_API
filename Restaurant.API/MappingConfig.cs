@@ -15,6 +15,9 @@ namespace Restaurant.API
             CreateMap<Category, CategoryDTO>().ReverseMap();
             CreateMap<Category, CategoryCreateDTO>().ReverseMap();
             CreateMap<Category, CategoryUpdateDTO>().ReverseMap();
+
+            CreateMap<RegisterRequestDTO, UserDTO>().ReverseMap();
+            CreateMap<ApplicationUser, UserDTO>().ReverseMap();
         }
     }
 }

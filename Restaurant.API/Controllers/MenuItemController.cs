@@ -60,6 +60,7 @@ namespace Restaurant.API.Controllers
         }
 
         [HttpPost]
+        //[Authorize(Roles = SD.Role_Admin)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<APIResponse>> CreateMenuItem([FromForm] MenuItemCreateDTO menuItemDTO)
@@ -123,6 +124,7 @@ namespace Restaurant.API.Controllers
             return BadRequest(_response);
         }
         [HttpPut("{id:int}")]
+        //[Authorize(Roles = SD.Role_Admin)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -205,6 +207,7 @@ namespace Restaurant.API.Controllers
             return BadRequest(_response);
         }
         [HttpDelete("{id:int}")]
+        //[Authorize(Roles = SD.Role_Admin)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
