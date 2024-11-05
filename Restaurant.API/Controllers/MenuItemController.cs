@@ -31,7 +31,7 @@ namespace Restaurant.API.Controllers
             IEnumerable<MenuItem> menuItems = await _unitOfWork.MenuItem.GetAllAsync();
             _response.Result = _mapper.Map<IEnumerable<MenuItemDTO>>(menuItems);
             _response.StatusCode = HttpStatusCode.OK;
-            return _response;
+            return Ok(_response);
         }
         [HttpGet("{id:int}", Name = "GetMenuItem")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -44,25 +44,24 @@ namespace Restaurant.API.Controllers
                 _response.IsSuccess = false;
                 _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages.Add("id not valid");
-                return _response;
+                return BadRequest(_response);
             }
-            var menuItem = await _unitOfWork.MenuItem.GetAsync(u => u.Id == id);
+            MenuItem menuItem = await _unitOfWork.MenuItem.GetAsync(u => u.Id == id);
             _response.Result = _mapper.Map<MenuItemDTO>(menuItem);
-            if (_response.Result == null)
+            if (menuItem == null)
             {
                 _response.IsSuccess = false;
                 _response.StatusCode = HttpStatusCode.NotFound;
                 _response.ErrorMessages.Add("Not found");
-                return _response;
+                return NotFound(_response);
             }
             _response.StatusCode = HttpStatusCode.OK;
-            return _response;
+            return Ok(_response);
         }
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<APIResponse>> CreateMenuItem([FromForm] MenuItemCreateDTO menuItemDTO)
         {
             try
@@ -75,13 +74,14 @@ namespace Restaurant.API.Controllers
                         _response.IsSuccess = false;
                         _response.StatusCode = HttpStatusCode.BadRequest;
                         _response.ErrorMessages.Add("Category is not valid");
+                        return BadRequest(_response);
                     }
                     if (menuItemDTO.Image == null || menuItemDTO.Image.Length == 0)
                     {
                         _response.IsSuccess = false;
                         _response.StatusCode = HttpStatusCode.BadRequest;
                         _response.ErrorMessages.Add("Image is require");
-                        return _response;
+                        return BadRequest(_response);
                     }
 
                     string wwwRootPath = _webHostEnvironment.WebRootPath;
@@ -102,7 +102,7 @@ namespace Restaurant.API.Controllers
                     await _unitOfWork.SaveAsync();
 
                     _response.IsSuccess = true;
-                    _response.Result = menuItem;
+                    _response.Result = _mapper.Map<MenuItemDTO>(menuItem);
                     _response.StatusCode = HttpStatusCode.Created;
                     return CreatedAtRoute("GetMenuItem", new { id = menuItem.Id }, _response);
                 }
@@ -120,10 +120,10 @@ namespace Restaurant.API.Controllers
                 _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages = new List<string>() { ex.ToString() };
             }
-            return _response;
+            return BadRequest(_response);
         }
         [HttpPut("{id:int}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<APIResponse>> UpdateMenuItem(int id, [FromForm] MenuItemUpdateDTO menuItemDTO)
@@ -137,6 +137,7 @@ namespace Restaurant.API.Controllers
                         _response.IsSuccess = false;
                         _response.StatusCode = HttpStatusCode.BadRequest;
                         _response.ErrorMessages.Add("MenuItem not found");
+                        return BadRequest(_response);
                     }
 
                     MenuItem menuItem = await _unitOfWork.MenuItem.GetAsync(u => u.Id == id);
@@ -146,6 +147,7 @@ namespace Restaurant.API.Controllers
                         _response.IsSuccess = false;
                         _response.StatusCode = HttpStatusCode.NotFound;
                         _response.ErrorMessages.Add("MenuItem not found");
+                        return NotFound(_response);
                     }
                     Category category = await _unitOfWork.Category.GetAsync(u => u.Id == menuItemDTO.CategoryId);
                     if (category == null)
@@ -153,16 +155,17 @@ namespace Restaurant.API.Controllers
                         _response.IsSuccess = false;
                         _response.StatusCode = HttpStatusCode.BadRequest;
                         _response.ErrorMessages.Add("Category is not valid");
+                        return BadRequest(_response);
                     }
                     //update
                     menuItem.Name = menuItemDTO.Name;
                     menuItem.Price = menuItemDTO.Price;
                     menuItem.SpecialTag = menuItemDTO.SpecialTag;
                     menuItem.Description = menuItemDTO.Description;
-
-                    string wwwRootPath = _webHostEnvironment.WebRootPath;
+                    menuItem.CategoryId = menuItemDTO.CategoryId;
                     if (menuItemDTO.Image != null && menuItemDTO.Image.Length > 0)
                     {
+                        string wwwRootPath = _webHostEnvironment.WebRootPath;
                         var oldImagePath = Path.Combine(wwwRootPath, menuItem.ImageUrl.TrimStart('\\'));
                         if (System.IO.File.Exists(oldImagePath))
                         {
@@ -183,6 +186,7 @@ namespace Restaurant.API.Controllers
 
                     _response.IsSuccess = true;
                     _response.StatusCode = HttpStatusCode.NoContent;
+                    return Ok(_response);
                 }
                 else
                 {
@@ -198,10 +202,10 @@ namespace Restaurant.API.Controllers
                 _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages = new List<string>() { ex.ToString() };
             }
-            return _response;
+            return BadRequest(_response);
         }
         [HttpDelete("{id:int}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<APIResponse>> DeleteMenuItem(int id)
@@ -213,6 +217,7 @@ namespace Restaurant.API.Controllers
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.ErrorMessages.Add("Id not valid");
+                    return BadRequest(_response);
                 }
 
                 MenuItem menuItem = await _unitOfWork.MenuItem.GetAsync(u => u.Id == id);
@@ -222,9 +227,10 @@ namespace Restaurant.API.Controllers
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.NotFound;
                     _response.ErrorMessages.Add("MenuItem not found");
-                    return _response;
+                    return NotFound(_response);
                 }
 
+                // delete image
                 string wwwRootPath = _webHostEnvironment.WebRootPath;
 
                 var oldImagePath = Path.Combine(wwwRootPath, menuItem.ImageUrl.TrimStart('\\'));
@@ -238,6 +244,7 @@ namespace Restaurant.API.Controllers
 
                 _response.IsSuccess = true;
                 _response.StatusCode = HttpStatusCode.NoContent;
+                return Ok(_response);
             }
             catch (Exception ex)
             {
@@ -245,7 +252,7 @@ namespace Restaurant.API.Controllers
                 _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.ErrorMessages = new List<string>() { ex.ToString() };
             }
-            return _response;
+            return BadRequest(_response);
         }
 
 

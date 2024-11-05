@@ -18,11 +18,9 @@ namespace Restaurant.API.Models
         [Required]
         public string ImageUrl { get; set; }
 
-        // Foreign key to Category
         [Required]
         public int CategoryId { get; set; }
 
-        // Navigation property to Category
         [ForeignKey("CategoryId")]
         [ValidateNever]
         public Category Category { get; set; }
