@@ -23,7 +23,7 @@ namespace Restaurant.API.Controllers
         [HttpPost]
         public async Task<ActionResult<APIResponse>> MakePayment(string userId)
         {
-            ShoppingCart shoppingCart = _db.ShoppingCarts.Include(u => u.CartItems).ThenInclude(u => u.MenuItem).FirstOrDefault(u => u.UserId == userId);
+            ShoppingCart shoppingCart = _db.ShoppingCarts.Include(u => u.CartItems).ThenInclude(u => u.MenuItem).FirstOrDefault(u => u.ApplicationUserId == userId);
             if (shoppingCart == null || shoppingCart.CartItems == null || shoppingCart.CartItems.Count() == 0)
             {
                 _response.StatusCode = HttpStatusCode.BadRequest;

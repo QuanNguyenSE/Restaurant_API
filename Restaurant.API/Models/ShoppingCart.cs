@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Restaurant.API.Models
@@ -9,7 +10,10 @@ namespace Restaurant.API.Models
         public int Id { get; set; }
 
         [Required]
-        public string UserId { get; set; }
+        public string ApplicationUserId { get; set; }
+        [ForeignKey("ApplicationUserId")]
+        [ValidateNever]
+        public ApplicationUser ApplicationUser { get; set; }
         [NotMapped]
         public string StripePaymentIntentId { get; set; }
         [NotMapped]
