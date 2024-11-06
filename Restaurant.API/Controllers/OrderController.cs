@@ -4,6 +4,7 @@ using Restaurant.API.Data;
 using Restaurant.API.Models;
 using Restaurant.API.Models.DTO;
 using Restaurant.API.Utility;
+using System.Net;
 
 namespace Restaurant.API.Controllers
 {
@@ -36,6 +37,7 @@ namespace Restaurant.API.Controllers
                 {
                     _response.Result = orders;
                 }
+                _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             }
             catch (Exception ex)
@@ -81,7 +83,6 @@ namespace Restaurant.API.Controllers
             {
                 ApplicationUserId = orderHeaderDTO.ApplicationUserId,
                 OrderDate = DateTime.Now,
-                PaymentDate = DateTime.Now,
                 OrderTotal = orderHeaderDTO.OrderTotal,
                 ItemsTotal = orderHeaderDTO.ItemsTotal,
                 OrderStatus = String.IsNullOrEmpty(orderHeaderDTO.OrderStatus) ? SD.StatusPending : orderHeaderDTO.OrderStatus,
@@ -109,6 +110,63 @@ namespace Restaurant.API.Controllers
                     _db.OrderDetails.Add(orderDetail);
                 }
                 _db.SaveChanges();
+            }
+            return _response;
+        }
+
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult<APIResponse>> UpdateOrderHeader(int id, [FromBody] OrderHeaderUpdateDTO orderHeaderUpdateDTO)
+        {
+            try
+            {
+                if (orderHeaderUpdateDTO == null || id != orderHeaderUpdateDTO.Id)
+                {
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.ErrorMessages.Add("Id is not valid");
+                    return BadRequest(_response);
+                }
+                OrderHeader orderFromDb = _db.OrderHeaders.FirstOrDefault(u => u.Id == id);
+
+                if (orderFromDb == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    _response.ErrorMessages.Add("Not Found");
+
+                    return NotFound(_response);
+                }
+                if (!string.IsNullOrEmpty(orderHeaderUpdateDTO.Name))
+                {
+                    orderFromDb.Name = orderHeaderUpdateDTO.Name;
+                }
+                if (!string.IsNullOrEmpty(orderHeaderUpdateDTO.PhoneNumber))
+                {
+                    orderFromDb.PhoneNumber = orderHeaderUpdateDTO.PhoneNumber;
+                }
+                if (!string.IsNullOrEmpty(orderHeaderUpdateDTO.Email))
+                {
+                    orderFromDb.Email = orderHeaderUpdateDTO.Email;
+                }
+                if (!string.IsNullOrEmpty(orderHeaderUpdateDTO.OrderStatus))
+                {
+                    orderFromDb.OrderStatus = orderHeaderUpdateDTO.OrderStatus;
+                }
+                if (!string.IsNullOrEmpty(orderHeaderUpdateDTO.PaymentIntentId))
+                {
+                    orderFromDb.PaymentIntentId = orderHeaderUpdateDTO.PaymentIntentId;
+                }
+                _db.SaveChanges();
+                _response.StatusCode = HttpStatusCode.NoContent;
+                _response.IsSuccess = true;
+                return Ok(_response);
+
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.ErrorMessages
+                     = new List<string>() { ex.ToString() };
             }
             return _response;
         }
