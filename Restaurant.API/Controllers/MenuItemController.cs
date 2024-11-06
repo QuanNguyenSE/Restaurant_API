@@ -26,13 +26,13 @@ namespace Restaurant.API.Controllers
         }
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<APIResponse>> GetMenuItems(string? categorize = null)
+        public async Task<ActionResult<APIResponse>> GetMenuItems(int? categoryId = 0)
         {
             IEnumerable<MenuItem> menuItems = await _unitOfWork.MenuItem.GetAllAsync(includeProperties: "Category");
-            if (!string.IsNullOrEmpty(categorize))
+            if (categoryId != 0)
             {
 
-                menuItems = menuItems.Where(u => u.Category.Name.ToLower() == categorize.ToLower());
+                menuItems = menuItems.Where(u => u.CategoryId == categoryId);
             }
             _response.Result = _mapper.Map<IEnumerable<MenuItemDTO>>(menuItems);
             _response.StatusCode = HttpStatusCode.OK;
