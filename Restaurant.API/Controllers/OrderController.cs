@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Restaurant.API.Data;
@@ -9,6 +10,7 @@ using System.Net;
 
 namespace Restaurant.API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class OrderController : ControllerBase
@@ -154,6 +156,7 @@ namespace Restaurant.API.Controllers
 
                     return NotFound(_response);
                 }
+
                 if (!string.IsNullOrEmpty(orderHeaderUpdateDTO.Name))
                 {
                     orderFromDb.Name = orderHeaderUpdateDTO.Name;
@@ -166,13 +169,21 @@ namespace Restaurant.API.Controllers
                 {
                     orderFromDb.Email = orderHeaderUpdateDTO.Email;
                 }
-                if (!string.IsNullOrEmpty(orderHeaderUpdateDTO.OrderStatus))
+                var user = await _userManager.GetUserAsync(User);
+                bool isAdmin = await _userManager.IsInRoleAsync(user, SD.Role_Admin);
+                bool isStaff = await _userManager.IsInRoleAsync(user, SD.Role_Staff);
+
+                if (isAdmin || isStaff)
                 {
-                    orderFromDb.OrderStatus = orderHeaderUpdateDTO.OrderStatus;
-                }
-                if (!string.IsNullOrEmpty(orderHeaderUpdateDTO.PaymentIntentId))
-                {
-                    orderFromDb.PaymentIntentId = orderHeaderUpdateDTO.PaymentIntentId;
+
+                    if (!string.IsNullOrEmpty(orderHeaderUpdateDTO.OrderStatus))
+                    {
+                        orderFromDb.OrderStatus = orderHeaderUpdateDTO.OrderStatus;
+                    }
+                    if (!string.IsNullOrEmpty(orderHeaderUpdateDTO.PaymentIntentId))
+                    {
+                        orderFromDb.PaymentIntentId = orderHeaderUpdateDTO.PaymentIntentId;
+                    }
                 }
                 _db.SaveChanges();
                 _response.StatusCode = HttpStatusCode.NoContent;

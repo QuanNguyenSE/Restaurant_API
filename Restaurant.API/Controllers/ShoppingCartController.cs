@@ -9,6 +9,7 @@ using System.Net;
 
 namespace Restaurant.API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ShoppingCartController : ControllerBase
@@ -27,16 +28,16 @@ namespace Restaurant.API.Controllers
 
         }
         [HttpGet]
-        //[Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<APIResponse>> GetShoppingCart(string userId)
+        public async Task<ActionResult<APIResponse>> GetShoppingCart()
         {
             try
             {
-                ApplicationUser user = await _userManager.FindByIdAsync(userId);
-                if (string.IsNullOrEmpty(userId) || user == null)
+                var user = await _userManager.GetUserAsync(User);
+                //ApplicationUser user = await _userManager.FindByIdAsync(userId);
+                if (user == null)
                 {
                     //shoppingCart = new ShoppingCart();
                     _response.Result = null;
@@ -46,7 +47,7 @@ namespace Restaurant.API.Controllers
                     return BadRequest(_response);
                 }
 
-                ShoppingCart shoppingCart = _db.ShoppingCarts.Include(u => u.CartItems).ThenInclude(u => u.MenuItem).FirstOrDefault(u => u.ApplicationUserId == userId);
+                ShoppingCart shoppingCart = _db.ShoppingCarts.Include(u => u.CartItems).ThenInclude(u => u.MenuItem).FirstOrDefault(u => u.ApplicationUserId == user.Id);
 
                 if (shoppingCart == null)
                 {
@@ -74,11 +75,10 @@ namespace Restaurant.API.Controllers
         }
 
         [HttpPost]
-        //[Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<APIResponse>> AddOrUpdateItemInCart(string userId, int menuItemId, int updateQuantityBy)
+        public async Task<ActionResult<APIResponse>> AddOrUpdateItemInCart(int menuItemId, int updateQuantityBy)
         {
             // Shopping cart will have one entry per user id, even if a user has many items in cart.
             // Cart items will have all the items in shopping cart for a user
@@ -89,10 +89,10 @@ namespace Restaurant.API.Controllers
             // when a user adds a new item to an existing shopping cart (basically user has other items in cart)
             // when a user updates an existing item count
             // when a user removes an existing item
-
-            ShoppingCart cart = _db.ShoppingCarts.Include(u => u.CartItems).FirstOrDefault(u => u.ApplicationUserId == userId);
+            var user = await _userManager.GetUserAsync(User);
+            ShoppingCart cart = _db.ShoppingCarts.Include(u => u.CartItems).FirstOrDefault(u => u.ApplicationUserId == user.Id);
             MenuItem menuItem = await _unitOfWork.MenuItem.GetAsync(u => u.Id == menuItemId);
-            ApplicationUser user = await _userManager.FindByIdAsync(userId);
+
             if (menuItem == null || user == null)
             {
                 _response.StatusCode = HttpStatusCode.BadRequest;
@@ -105,7 +105,7 @@ namespace Restaurant.API.Controllers
                 //create a shopping cart & add cart item
                 ShoppingCart newCart = new ShoppingCart()
                 {
-                    ApplicationUserId = userId,
+                    ApplicationUserId = user.Id,
                     LastUpdated = DateTime.UtcNow,
                 };
                 _db.ShoppingCarts.Add(newCart);
@@ -123,7 +123,7 @@ namespace Restaurant.API.Controllers
                 _db.CartItems.Add(newCartItem);
                 _db.SaveChanges();
 
-                
+
             }
             else
             {

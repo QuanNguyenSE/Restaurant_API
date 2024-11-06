@@ -1,13 +1,15 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Restaurant.API.Models;
 using Restaurant.API.Models.DTO;
 using Restaurant.API.Repository.IRepository;
+using Restaurant.API.Utility;
 using System.Net;
 
 namespace Restaurant.API.Controllers
 {
-    //[Authorize(Roles = SD.Role_Admin)]
+    [Authorize(Roles = SD.Role_Admin)]
     [Route("api/[controller]")]
     [ApiController]
     public class CategoryController : ControllerBase
