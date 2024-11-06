@@ -16,6 +16,7 @@ namespace Restaurant.API.Models.DTO
         //public string? PaymentStatus { get; set; }
         //public string? TrackingNumber { get; set; }
         //public string? Carrier { get; set; }
+        public DateTime? ShippingDate { get; set; }
         public string? PaymentIntentId { get; set; }
         [Required]
         public string Email { get; set; }

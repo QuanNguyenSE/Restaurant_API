@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.ComponentModel.DataAnnotations;
 
 namespace Restaurant.API.Models.DTO
 {
@@ -6,14 +7,13 @@ namespace Restaurant.API.Models.DTO
     {
         [Required]
         public string ApplicationUserId { get; set; }
-        public DateTime PaymentDate { get; set; }
-        public DateTime ShippingDate { get; set; }
+        //public DateTime PaymentDate { get; set; }
         public double OrderTotal { get; set; }
         public int ItemsTotal { get; set; }
         public string? OrderStatus { get; set; }
-        public string? PaymentStatus { get; set; }
-        public string? TrackingNumber { get; set; }
-        public string? Carrier { get; set; }
+        //public string? PaymentStatus { get; set; }
+        //public string? TrackingNumber { get; set; }
+        //public string? Carrier { get; set; }
         public string? PaymentIntentId { get; set; }
         [Required]
         public string Email { get; set; }
@@ -25,7 +25,7 @@ namespace Restaurant.API.Models.DTO
         public string? City { get; set; }
         public string? State { get; set; }
 
-
+        [ValidateNever]
         public IEnumerable<OrderDetailsCreateDTO> OrderDetail { get; set; }
     }
 }

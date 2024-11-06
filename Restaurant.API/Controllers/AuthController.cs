@@ -28,7 +28,7 @@ namespace Restaurant.API.Controllers
         public async Task<ActionResult<APIResponse>> Login([FromBody] LoginRequestDTO resquestDTO)
         {
             LoginResponseDTO loginReponse = await _unitOfWork.AuthRepository.LoginAsync(resquestDTO);
-            if (loginReponse.User == null || String.IsNullOrEmpty(loginReponse.Token))
+            if (loginReponse == null)
             {
                 _response.IsSuccess = false;
                 _response.StatusCode = HttpStatusCode.BadRequest;

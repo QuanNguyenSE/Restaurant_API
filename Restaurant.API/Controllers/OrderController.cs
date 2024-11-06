@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Restaurant.API.Data;
 using Restaurant.API.Models;
@@ -13,38 +14,56 @@ namespace Restaurant.API.Controllers
     public class OrderController : ControllerBase
     {
         private readonly ApplicationDbContext _db;
+        private readonly RoleManager<IdentityRole> _roleManager;
         protected APIResponse _response;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public OrderController(ApplicationDbContext db)
+        public OrderController(ApplicationDbContext db, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
         {
             _db = db;
             _response = new APIResponse();
+            _userManager = userManager;
+            _roleManager = roleManager;
         }
         [HttpGet]
-        public async Task<ActionResult<APIResponse>> GetOrders(string? userId)
+        public async Task<ActionResult<APIResponse>> GetOrders()
         {
             try
             {
-                var orders = _db.OrderHeaders.Include(u => u.OrderDetail)
-                .ThenInclude(u => u.MenuItem)
-                .OrderByDescending(u => u.Id);
+                var orders = _db.OrderHeaders.Include(u => u.OrderDetail).ThenInclude(u => u.MenuItem).OrderByDescending(u => u.Id);
 
-                if (!string.IsNullOrEmpty(userId))
+                var user = await _userManager.GetUserAsync(User);
+
+                if (user == null)
                 {
-                    _response.Result = orders.Where(u => u.ApplicationUserId == userId);
+                    _response.IsSuccess = false;
+                    _response.ErrorMessages.Add("User is unauthorized");
+                    _response.StatusCode = HttpStatusCode.Unauthorized;
+                    return Unauthorized(_response);
+                }
+
+                bool isAdmin = await _userManager.IsInRoleAsync(user, SD.Role_Admin);
+                bool isStaff = await _userManager.IsInRoleAsync(user, SD.Role_Staff);
+
+                if (isAdmin || isStaff)
+                {
+                    _response.Result = orders;
+                    _response.StatusCode = HttpStatusCode.OK;
+                    return Ok(_response);
                 }
                 else
                 {
-                    _response.Result = orders;
+                    _response.StatusCode = HttpStatusCode.OK;
+                    _response.Result = orders.Where(u => u.ApplicationUserId == user.Id);
+                    return Ok(_response);
                 }
-                _response.StatusCode = HttpStatusCode.OK;
-                return Ok(_response);
+
             }
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
+                return _response;
             }
-            return _response;
         }
         [HttpGet("{id:int}")]
         public async Task<ActionResult<APIResponse>> GetOrder(int id)
@@ -76,7 +95,6 @@ namespace Restaurant.API.Controllers
             return _response;
         }
         [HttpPost]
-
         public async Task<ActionResult<APIResponse>> CreateOrder([FromBody] OrderHeaderCreateDTO orderHeaderDTO)
         {
             OrderHeader newOrderHeader = new OrderHeader()

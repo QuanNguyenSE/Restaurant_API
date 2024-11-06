@@ -18,7 +18,7 @@ namespace Restaurant.API.Repository
         private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
 
-        public AuthRepository(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration,IMapper mapper)
+        public AuthRepository(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration, IMapper mapper)
         {
             _userManager = userManager;
             _roleManager = roleManager;
@@ -66,10 +66,18 @@ namespace Restaurant.API.Repository
             };
 
             var result = await _userManager.CreateAsync(user, requestDTO.Password);
-            
+
             if (result.Succeeded)
             {
-                await _userManager.AddToRoleAsync(user, requestDTO.Role ?? SD.Role_OnlCustomer);
+                bool isValid = await _roleManager.RoleExistsAsync(requestDTO.Role);
+                if (isValid)
+                {
+                    await _userManager.AddToRoleAsync(user, requestDTO.Role ?? SD.Role_OnlCustomer);
+                }
+                else
+                {
+                    await _userManager.AddToRoleAsync(user, SD.Role_OnlCustomer);
+                }
             }
 
             return _mapper.Map<UserDTO>(user);
