@@ -1,45 +1,42 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Restaurant.API.Data;
 using Restaurant.API.Models;
+using Restaurant.API.Models.DTO;
 using Restaurant.API.Repository.IRepository;
 using System.Net;
 
 namespace Restaurant.API.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ShoppingCartController : ControllerBase
     {
         protected APIResponse _response;
-        private readonly ApplicationDbContext _db;
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IMapper _mapper;
 
-        public ShoppingCartController(ApplicationDbContext db, IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager)
+        public ShoppingCartController(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, IMapper mapper)
         {
             _response = new APIResponse();
-            _db = db;
             _unitOfWork = unitOfWork;
             _userManager = userManager;
-
+            _mapper = mapper;
         }
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<APIResponse>> GetShoppingCart()
+        public async Task<ActionResult<APIResponse>> GetShoppingCart(string userId)
         {
             try
             {
-                var user = await _userManager.GetUserAsync(User);
-                //ApplicationUser user = await _userManager.FindByIdAsync(userId);
+                //var user = await _userManager.GetUserAsync(User);
+                ApplicationUser user = await _userManager.FindByIdAsync(userId);
                 if (user == null)
                 {
-                    //shoppingCart = new ShoppingCart();
                     _response.Result = null;
                     _response.IsSuccess = false;
                     _response.ErrorMessages.Add("User is not valid");
@@ -47,22 +44,38 @@ namespace Restaurant.API.Controllers
                     return BadRequest(_response);
                 }
 
-                ShoppingCart shoppingCart = _db.ShoppingCarts.Include(u => u.CartItems).ThenInclude(u => u.MenuItem).FirstOrDefault(u => u.ApplicationUserId == user.Id);
-
+                ShoppingCart shoppingCart = await _unitOfWork.ShoppingCart.GetAsync(u => u.ApplicationUserId == user.Id);
                 if (shoppingCart == null)
                 {
-                    _response.IsSuccess = false;
-                    _response.ErrorMessages.Add("Shopping Cart does not exists");
-                    _response.StatusCode = HttpStatusCode.BadRequest;
-                    return BadRequest(_response);
+                    // shopping cart doees not exists
+                    // create a shopping cart
+                    shoppingCart = new ShoppingCart
+                    {
+                        ApplicationUserId = userId,
+                        CartTotal = 0,
+                        ItemsTotal = 0,
+                        LastUpdated = DateTime.UtcNow,
+                        CartItems = new List<CartItem>()
+                    };
+                    await _unitOfWork.ShoppingCart.CreateAsync(shoppingCart);
+                    await _unitOfWork.SaveAsync();
+                    _response.Result = _mapper.Map<ShoppingCartDTO>(shoppingCart);
+                    _response.StatusCode = HttpStatusCode.OK;
+                    return Ok(_response);
+
                 }
-                if (shoppingCart.CartItems != null && shoppingCart.CartItems.Count > 0)
+                else
                 {
-                    shoppingCart.CartTotal = shoppingCart.CartItems.Sum(u => u.Quantity * u.MenuItem.Price);
+                    shoppingCart.CartItems = (ICollection<CartItem>)await _unitOfWork.CartItem.GetAllAsync(u => u.ShoppingCartId == shoppingCart.Id, includeProperties: "MenuItem");
+                    if (shoppingCart.CartItems != null && shoppingCart.CartItems.Count > 0)
+                    {
+                        await _unitOfWork.ShoppingCart.UpdateAsync(shoppingCart);
+                        await _unitOfWork.SaveAsync();
+                    }
+                    _response.Result = _mapper.Map<ShoppingCartDTO>(shoppingCart);
+                    _response.StatusCode = HttpStatusCode.OK;
+                    return Ok(_response);
                 }
-                _response.Result = shoppingCart;
-                _response.StatusCode = HttpStatusCode.OK;
-                return Ok(_response);
             }
             catch (Exception ex)
             {
@@ -78,99 +91,167 @@ namespace Restaurant.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<APIResponse>> AddOrUpdateItemInCart(int menuItemId, int updateQuantityBy)
+        public async Task<ActionResult<APIResponse>> AddOrUpdateItemInCart(string userId, int menuItemId, int updateQuantity)
         {
-            // Shopping cart will have one entry per user id, even if a user has many items in cart.
-            // Cart items will have all the items in shopping cart for a user
-            // updatequantityby will have count by with an items quantity needs to be updated
-            // if it is -1 that means we have lower a count if it is 5 it means we have to add 5 count to existing count.
-            // if updatequantityby by is 0, item will be removed
-            // when a user adds a new item to a new shopping cart for the first time
-            // when a user adds a new item to an existing shopping cart (basically user has other items in cart)
-            // when a user updates an existing item count
-            // when a user removes an existing item
-            var user = await _userManager.GetUserAsync(User);
-            ShoppingCart cart = _db.ShoppingCarts.Include(u => u.CartItems).FirstOrDefault(u => u.ApplicationUserId == user.Id);
-            MenuItem menuItem = await _unitOfWork.MenuItem.GetAsync(u => u.Id == menuItemId);
 
-            if (menuItem == null || user == null)
+            //var user = await _userManager.GetUserAsync(User);
+            ApplicationUser user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                _response.Result = null;
+                _response.IsSuccess = false;
+                _response.ErrorMessages.Add("User is not valid");
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                return BadRequest(_response);
+            }
+            ShoppingCart cart = await _unitOfWork.ShoppingCart.GetAsync(u => u.ApplicationUserId == user.Id);
+            MenuItem menuItem = await _unitOfWork.MenuItem.GetAsync(u => u.Id == menuItemId);
+            if (menuItem == null)
             {
                 _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.IsSuccess = false;
                 _response.ErrorMessages.Add("Menu item is not valid");
                 return BadRequest(_response);
             }
-            if (cart == null && updateQuantityBy > 0)
+            if (cart == null && updateQuantity > 0)
             {
-                //create a shopping cart & add cart item
+                // shopping cart doees not exists
+                //create a shopping cart 
                 ShoppingCart newCart = new ShoppingCart()
                 {
-                    ApplicationUserId = user.Id,
+                    ApplicationUserId = userId,
+                    CartTotal = 0,
+                    ItemsTotal = 0,
                     LastUpdated = DateTime.UtcNow,
+                    CartItems = new List<CartItem>()
                 };
-                _db.ShoppingCarts.Add(newCart);
-                _db.SaveChanges();
-
+                await _unitOfWork.ShoppingCart.CreateAsync(newCart);
+                await _unitOfWork.SaveAsync();
+                // add cart item
                 CartItem newCartItem = new CartItem()
                 {
                     ShoppingCartId = newCart.Id,
-                    Quantity = updateQuantityBy,
+                    Quantity = updateQuantity,
                     MenuItemId = menuItemId,
-                    Price = menuItem.Price,
                     DateAdded = DateTime.UtcNow,
-                    MenuItem = null
+                    MenuItem = menuItem
                 };
-                _db.CartItems.Add(newCartItem);
-                _db.SaveChanges();
+                await _unitOfWork.CartItem.CreateAsync(newCartItem);
+                await _unitOfWork.SaveAsync();
 
+                newCart.CartItems = (ICollection<CartItem>)await _unitOfWork.CartItem.GetAllAsync(u => u.ShoppingCartId == newCart.Id, includeProperties: "MenuItem");
+                await _unitOfWork.ShoppingCart.UpdateAsync(newCart);
+                await _unitOfWork.SaveAsync();
+
+
+                _response.Result = _mapper.Map<ShoppingCartDTO>(newCart);
+                _response.StatusCode = HttpStatusCode.OK;
+                return Ok(_response);
 
             }
             else
             {
                 //shopping cart exists
-                CartItem cartItem = cart.CartItems.FirstOrDefault(u => u.MenuItemId == menuItemId);
-                if (cartItem == null)
+                CartItem cartItem = await _unitOfWork.CartItem.GetAsync(u => u.ShoppingCartId == cart.Id && u.MenuItemId == menuItem.Id);
+                if (cartItem == null && updateQuantity > 0)
                 {
                     //item does not exists in cart
                     // add item into cart
                     CartItem newCartItem = new CartItem()
                     {
                         ShoppingCartId = cart.Id,
-                        Quantity = updateQuantityBy,
+                        Quantity = updateQuantity,
                         MenuItemId = menuItemId,
-                        Price = menuItem.Price,
                         DateAdded = DateTime.UtcNow,
-                        MenuItem = null
+                        MenuItem = menuItem
                     };
-                    _db.CartItems.Add(newCartItem);
-                    _db.SaveChanges();
+                    await _unitOfWork.CartItem.CreateAsync(newCartItem);
+                    await _unitOfWork.SaveAsync();
+                    cart.CartItems = (ICollection<CartItem>)await _unitOfWork.CartItem.GetAllAsync(u => u.ShoppingCartId == cart.Id, includeProperties: "MenuItem");
+                    await _unitOfWork.ShoppingCart.UpdateAsync(cart);
+                    await _unitOfWork.SaveAsync();
+
+                    _response.Result = _mapper.Map<ShoppingCartDTO>(cart);
+                    _response.StatusCode = HttpStatusCode.OK;
+                    return Ok(_response);
                 }
                 else
                 {
                     //item exists in cart 
-                    // update quantity
-                    int newQuantity = cartItem.Quantity + updateQuantityBy;
-                    if (newQuantity <= 0 || updateQuantityBy == 0)
+                    // update quantity (minus or add)
+                    int newQuantity = cartItem.Quantity + updateQuantity;
+                    if (newQuantity <= 0)
                     {
-                        _db.CartItems.Remove(cartItem);
-                        _db.SaveChanges();
-                        if (cart.CartItems.Count == 0)
-                        {
-                            _db.ShoppingCarts.Remove(cart);
-                            _db.SaveChanges();
-                        }
+                        await _unitOfWork.CartItem.RemoveAsync(cartItem);
+                        await _unitOfWork.SaveAsync();
+                        cart.CartItems = (ICollection<CartItem>)await _unitOfWork.CartItem.GetAllAsync(u => u.ShoppingCartId == cart.Id, includeProperties: "MenuItem");
+                        await _unitOfWork.ShoppingCart.UpdateAsync(cart);
+                        await _unitOfWork.SaveAsync();
+
+
+                        _response.Result = _mapper.Map<ShoppingCartDTO>(cart);
+                        _response.StatusCode = HttpStatusCode.OK;
+                        return Ok(_response);
                     }
                     else
                     {
                         cartItem.Quantity = newQuantity;
-                        _db.SaveChanges();
+                        await _unitOfWork.SaveAsync();
+                        cart.CartItems = (ICollection<CartItem>)await _unitOfWork.CartItem.GetAllAsync(u => u.ShoppingCartId == cart.Id, includeProperties: "MenuItem");
+                        await _unitOfWork.ShoppingCart.UpdateAsync(cart);
+                        await _unitOfWork.SaveAsync();
+
+
+                        _response.Result = _mapper.Map<ShoppingCartDTO>(cart);
+                        _response.StatusCode = HttpStatusCode.OK;
+                        return Ok(_response);
                     }
 
                 }
 
             }
-            _response.StatusCode = HttpStatusCode.OK;
-            return Ok(_response);
+
+
+        }
+        [HttpDelete]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<APIResponse>> RemoveItemInCart(string userId, int cartItemId)
+        {
+
+            //var user = await _userManager.GetUserAsync(User);
+            ApplicationUser user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                _response.Result = null;
+                _response.IsSuccess = false;
+                _response.ErrorMessages.Add("User is not valid");
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                return BadRequest(_response);
+            }
+            ShoppingCart cart = await _unitOfWork.ShoppingCart.GetAsync(u => u.ApplicationUserId == user.Id);
+            CartItem cartItem = await _unitOfWork.CartItem.GetAsync(u => u.Id == cartItemId);
+            if (cartItem == null)
+            {
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.IsSuccess = false;
+                _response.ErrorMessages.Add("Cart item does not exists");
+                return BadRequest(_response);
+            }
+            else
+            {
+                await _unitOfWork.CartItem.RemoveAsync(cartItem);
+                await _unitOfWork.SaveAsync();
+                cart.CartItems = (ICollection<CartItem>)await _unitOfWork.CartItem.GetAllAsync(u => u.ShoppingCartId == cart.Id, includeProperties: "MenuItem");
+                await _unitOfWork.ShoppingCart.UpdateAsync(cart);
+                await _unitOfWork.SaveAsync();
+
+
+                _response.Result = _mapper.Map<ShoppingCartDTO>(cart);
+                _response.StatusCode = HttpStatusCode.OK;
+                return Ok(_response);
+            }
         }
     }
 }

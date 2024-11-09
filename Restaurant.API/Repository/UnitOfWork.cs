@@ -16,6 +16,7 @@ namespace Restaurant.API.Repository
         public IMenuItemRepository MenuItem { get; private set; }
         public ICategoryRepository Category { get; private set; }
         public IShoppingCartRepository ShoppingCart { get; private set; }
+        public ICartItemRepository CartItem { get; private set; }
 
         public IAuthRepository AuthRepository { get; private set; }
 
@@ -26,9 +27,11 @@ namespace Restaurant.API.Repository
             _roleManager = roleManager;
             _configuration = configuration;
             _mapper = mapper;
+
             MenuItem = new MenuItemRepository(_db);
             Category = new CategoryRepository(_db);
             ShoppingCart = new ShoppingCartRepository(_db);
+            CartItem = new CartItemRepository(_db);
             AuthRepository = new AuthRepository(_userManager, _roleManager, _configuration, _mapper);
         }
 

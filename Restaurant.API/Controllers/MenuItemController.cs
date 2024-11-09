@@ -1,10 +1,8 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Restaurant.API.Models;
 using Restaurant.API.Models.DTO;
 using Restaurant.API.Repository.IRepository;
-using Restaurant.API.Utility;
 using System.Net;
 
 namespace Restaurant.API.Controllers
@@ -28,13 +26,33 @@ namespace Restaurant.API.Controllers
         }
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<APIResponse>> GetMenuItems(int? categoryId = 0)
+        public async Task<ActionResult<APIResponse>> GetMenuItems()
         {
-            IEnumerable<MenuItem> menuItems = await _unitOfWork.MenuItem.GetAllAsync(includeProperties: "Category");
-            if (categoryId != 0)
-            {
+            IEnumerable<MenuItem> menuItems = await _unitOfWork.MenuItem.GetAllAsync();
+            _response.Result = _mapper.Map<IEnumerable<MenuItemDTO>>(menuItems);
+            _response.StatusCode = HttpStatusCode.OK;
+            return Ok(_response);
+        }
 
-                menuItems = menuItems.Where(u => u.CategoryId == categoryId);
+        [HttpGet("category/{categoryId:int}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<APIResponse>> GetMenuItemsByCategory(int categoryId = 0)
+        {
+            if (categoryId == 0)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages.Add("id not valid");
+                return BadRequest(_response);
+            }
+            IEnumerable<MenuItem> menuItems = await _unitOfWork.MenuItem.GetAllAsync();
+            menuItems = menuItems.Where(x => x.CategoryId == categoryId);
+            if (menuItems == null)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.NotFound;
+                _response.ErrorMessages.Add("Not found");
+                return NotFound(_response);
             }
             _response.Result = _mapper.Map<IEnumerable<MenuItemDTO>>(menuItems);
             _response.StatusCode = HttpStatusCode.OK;
@@ -67,7 +85,7 @@ namespace Restaurant.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = SD.Role_Admin)]
+        //[Authorize(Roles = SD.Role_Admin)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<APIResponse>> CreateMenuItem([FromForm] MenuItemCreateDTO menuItemDTO)
@@ -131,7 +149,7 @@ namespace Restaurant.API.Controllers
             return BadRequest(_response);
         }
         [HttpPut("{id:int}")]
-        [Authorize(Roles = SD.Role_Admin)]
+        //[Authorize(Roles = SD.Role_Admin)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -214,7 +232,7 @@ namespace Restaurant.API.Controllers
             return BadRequest(_response);
         }
         [HttpDelete("{id:int}")]
-        [Authorize(Roles = SD.Role_Admin)]
+        //[Authorize(Roles = SD.Role_Admin)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

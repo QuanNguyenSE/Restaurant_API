@@ -8,6 +8,7 @@ namespace Restaurant.API.Repository.IRepository
         ICategoryRepository Category { get; }
         IAuthRepository AuthRepository { get;}
         IShoppingCartRepository ShoppingCart {  get; }
+        ICartItemRepository CartItem { get; }
         Task SaveAsync();
     }
 }

@@ -13,8 +13,13 @@ namespace Restaurant.API.Repository
         }
         public async Task<ShoppingCart> UpdateAsync(ShoppingCart entity)
         {
+            entity.CartTotal = entity.CartItems.Sum(u => u.Quantity * u.MenuItem.Price);
+            entity.ItemsTotal = entity.CartItems.Count;
+            entity.LastUpdated = DateTime.Now;
+            _db.ShoppingCarts.Update(entity);
             _db.ShoppingCarts.Update(entity);
             return entity;
         }
     }
+
 }

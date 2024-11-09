@@ -12,6 +12,6 @@ namespace Restaurant.API.Models
         [DisplayName("Category Name")]
         public string Name { get; set; }
         public string? Description { get; set; }
-
+        public ICollection<MenuItem> MenuItems { get; set; }
     }
 }

@@ -22,6 +22,8 @@ namespace Restaurant.API.Models
         public ICollection<CartItem> CartItems { get; set; }
         [NotMapped]
         public double CartTotal { get; set; }
+        [NotMapped]
+        public int ItemsTotal { get; set; }
 
         public DateTime LastUpdated { get; set; }
     }
