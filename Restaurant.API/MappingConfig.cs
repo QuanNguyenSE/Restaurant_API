@@ -22,6 +22,9 @@ namespace Restaurant.API
             CreateMap<ShoppingCart, ShoppingCartDTO>().ReverseMap();
             CreateMap<CartItem, CartItemDTO>().ReverseMap();
 
+            CreateMap<OrderHeader, OrderHeaderDTO>().ReverseMap();
+            CreateMap<OrderDetail, OrderDetailDTO>().ReverseMap();
+
         }
     }
 }

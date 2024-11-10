@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Restaurant.API.Data;
 
@@ -11,9 +12,11 @@ using Restaurant.API.Data;
 namespace Restaurant.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241110140346_UpdateDeliveryInfo2")]
+    partial class UpdateDeliveryInfo2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -649,22 +652,27 @@ namespace Restaurant.API.Migrations
                                 .HasColumnType("int");
 
                             b1.Property<string>("City")
+                                .IsRequired()
                                 .HasColumnType("nvarchar(max)")
                                 .HasColumnName("City");
 
                             b1.Property<string>("Name")
+                                .IsRequired()
                                 .HasColumnType("nvarchar(max)")
                                 .HasColumnName("Name");
 
                             b1.Property<string>("PhoneNumber")
+                                .IsRequired()
                                 .HasColumnType("nvarchar(max)")
                                 .HasColumnName("PhoneNumber");
 
                             b1.Property<string>("State")
+                                .IsRequired()
                                 .HasColumnType("nvarchar(max)")
                                 .HasColumnName("State");
 
                             b1.Property<string>("StreetAddress")
+                                .IsRequired()
                                 .HasColumnType("nvarchar(max)")
                                 .HasColumnName("StreetAddress");
 
@@ -678,7 +686,8 @@ namespace Restaurant.API.Migrations
 
                     b.Navigation("ApplicationUser");
 
-                    b.Navigation("DeliveryInfo");
+                    b.Navigation("DeliveryInfo")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Restaurant.API.Models.ShoppingCart", b =>

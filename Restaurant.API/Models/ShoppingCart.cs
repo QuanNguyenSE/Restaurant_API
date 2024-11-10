@@ -19,7 +19,7 @@ namespace Restaurant.API.Models
         [NotMapped]
         public string ClientSecret { get; set; }
 
-        public ICollection<CartItem> CartItems { get; set; }
+        public IEnumerable<CartItem> CartItems { get; set; }
         [NotMapped]
         public double CartTotal { get; set; }
         [NotMapped]

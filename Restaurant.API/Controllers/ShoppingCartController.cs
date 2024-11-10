@@ -66,8 +66,8 @@ namespace Restaurant.API.Controllers
                 }
                 else
                 {
-                    shoppingCart.CartItems = (ICollection<CartItem>)await _unitOfWork.CartItem.GetAllAsync(u => u.ShoppingCartId == shoppingCart.Id, includeProperties: "MenuItem");
-                    if (shoppingCart.CartItems != null && shoppingCart.CartItems.Count > 0)
+                    shoppingCart.CartItems = await _unitOfWork.CartItem.GetAllAsync(u => u.ShoppingCartId == shoppingCart.Id, includeProperties: "MenuItem");
+                    if (shoppingCart.CartItems != null && shoppingCart.CartItems.Count() > 0)
                     {
                         await _unitOfWork.ShoppingCart.UpdateAsync(shoppingCart);
                         await _unitOfWork.SaveAsync();
@@ -139,7 +139,7 @@ namespace Restaurant.API.Controllers
                 await _unitOfWork.CartItem.CreateAsync(newCartItem);
                 await _unitOfWork.SaveAsync();
 
-                newCart.CartItems = (ICollection<CartItem>)await _unitOfWork.CartItem.GetAllAsync(u => u.ShoppingCartId == newCart.Id, includeProperties: "MenuItem");
+                newCart.CartItems = await _unitOfWork.CartItem.GetAllAsync(u => u.ShoppingCartId == newCart.Id, includeProperties: "MenuItem");
                 await _unitOfWork.ShoppingCart.UpdateAsync(newCart);
                 await _unitOfWork.SaveAsync();
 
@@ -167,7 +167,7 @@ namespace Restaurant.API.Controllers
                     };
                     await _unitOfWork.CartItem.CreateAsync(newCartItem);
                     await _unitOfWork.SaveAsync();
-                    cart.CartItems = (ICollection<CartItem>)await _unitOfWork.CartItem.GetAllAsync(u => u.ShoppingCartId == cart.Id, includeProperties: "MenuItem");
+                    cart.CartItems = await _unitOfWork.CartItem.GetAllAsync(u => u.ShoppingCartId == cart.Id, includeProperties: "MenuItem");
                     await _unitOfWork.ShoppingCart.UpdateAsync(cart);
                     await _unitOfWork.SaveAsync();
 
@@ -184,7 +184,7 @@ namespace Restaurant.API.Controllers
                     {
                         await _unitOfWork.CartItem.RemoveAsync(cartItem);
                         await _unitOfWork.SaveAsync();
-                        cart.CartItems = (ICollection<CartItem>)await _unitOfWork.CartItem.GetAllAsync(u => u.ShoppingCartId == cart.Id, includeProperties: "MenuItem");
+                        cart.CartItems = await _unitOfWork.CartItem.GetAllAsync(u => u.ShoppingCartId == cart.Id, includeProperties: "MenuItem");
                         await _unitOfWork.ShoppingCart.UpdateAsync(cart);
                         await _unitOfWork.SaveAsync();
 
@@ -197,7 +197,7 @@ namespace Restaurant.API.Controllers
                     {
                         cartItem.Quantity = newQuantity;
                         await _unitOfWork.SaveAsync();
-                        cart.CartItems = (ICollection<CartItem>)await _unitOfWork.CartItem.GetAllAsync(u => u.ShoppingCartId == cart.Id, includeProperties: "MenuItem");
+                        cart.CartItems = await _unitOfWork.CartItem.GetAllAsync(u => u.ShoppingCartId == cart.Id, includeProperties: "MenuItem");
                         await _unitOfWork.ShoppingCart.UpdateAsync(cart);
                         await _unitOfWork.SaveAsync();
 
@@ -243,7 +243,7 @@ namespace Restaurant.API.Controllers
             {
                 await _unitOfWork.CartItem.RemoveAsync(cartItem);
                 await _unitOfWork.SaveAsync();
-                cart.CartItems = (ICollection<CartItem>)await _unitOfWork.CartItem.GetAllAsync(u => u.ShoppingCartId == cart.Id, includeProperties: "MenuItem");
+                cart.CartItems = await _unitOfWork.CartItem.GetAllAsync(u => u.ShoppingCartId == cart.Id, includeProperties: "MenuItem");
                 await _unitOfWork.ShoppingCart.UpdateAsync(cart);
                 await _unitOfWork.SaveAsync();
 

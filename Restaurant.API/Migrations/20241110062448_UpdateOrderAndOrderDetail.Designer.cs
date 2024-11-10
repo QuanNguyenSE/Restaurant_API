@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Restaurant.API.Data;
 
@@ -11,9 +12,11 @@ using Restaurant.API.Data;
 namespace Restaurant.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241110062448_UpdateOrderAndOrderDetail")]
+    partial class UpdateOrderAndOrderDetail
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -649,24 +652,19 @@ namespace Restaurant.API.Migrations
                                 .HasColumnType("int");
 
                             b1.Property<string>("City")
-                                .HasColumnType("nvarchar(max)")
-                                .HasColumnName("City");
+                                .HasColumnType("nvarchar(max)");
 
                             b1.Property<string>("Name")
-                                .HasColumnType("nvarchar(max)")
-                                .HasColumnName("Name");
+                                .HasColumnType("nvarchar(max)");
 
                             b1.Property<string>("PhoneNumber")
-                                .HasColumnType("nvarchar(max)")
-                                .HasColumnName("PhoneNumber");
+                                .HasColumnType("nvarchar(max)");
 
                             b1.Property<string>("State")
-                                .HasColumnType("nvarchar(max)")
-                                .HasColumnName("State");
+                                .HasColumnType("nvarchar(max)");
 
                             b1.Property<string>("StreetAddress")
-                                .HasColumnType("nvarchar(max)")
-                                .HasColumnName("StreetAddress");
+                                .HasColumnType("nvarchar(max)");
 
                             b1.HasKey("OrderHeaderId");
 

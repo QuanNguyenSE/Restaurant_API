@@ -1,14 +1,14 @@
-﻿using Restaurant.API.Models;
-
-namespace Restaurant.API.Repository.IRepository
+﻿namespace Restaurant.API.Repository.IRepository
 {
     public interface IUnitOfWork
     {
         IMenuItemRepository MenuItem { get; }
         ICategoryRepository Category { get; }
-        IAuthRepository AuthRepository { get;}
-        IShoppingCartRepository ShoppingCart {  get; }
+        IAuthRepository AuthRepository { get; }
+        IShoppingCartRepository ShoppingCart { get; }
         ICartItemRepository CartItem { get; }
+        IOrderHeaderRepository OrderHeader { get; }
+        IOrderDetailRepository OrderDetail { get; }
         Task SaveAsync();
     }
 }
