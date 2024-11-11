@@ -26,7 +26,6 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddAutoMapper(typeof(MappingConfig));
 
-builder.Services.AddScoped<IDbInitializer, DbInitializer>();
 builder.Services.Configure<IdentityOptions>(options =>
 {
     options.Password.RequireDigit = false;
@@ -105,16 +104,23 @@ app.UseCors(o => o.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin().WithExpose
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseStaticFiles();
-SeedDatabase();
 app.MapControllers();
 
-app.Run();
-
-void SeedDatabase()
+var scope = app.Services.CreateScope();
+var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+var roleManage = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+try
 {
-    using (var scope = app.Services.CreateScope())
+    if (db.Database.GetPendingMigrations().Count() > 0)
     {
-        var dbInitializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
-        dbInitializer.Initialize();
+        db.Database.Migrate();
     }
+    await DbInitializer.Initialize(db, userManager, roleManage);
 }
+catch (Exception ex)
+{
+
+}
+
+app.Run();
