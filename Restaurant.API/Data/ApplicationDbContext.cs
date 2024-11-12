@@ -14,7 +14,7 @@ namespace Restaurant.API.Data
         public DbSet<OrderHeader> OrderHeaders { get; set; }
         public DbSet<OrderDetail> OrderDetails { get; set; }
 
-
+        public DbSet<Booking> Bookings { get; set; }
 
         public ApplicationDbContext(DbContextOptions options) : base(options)
         {

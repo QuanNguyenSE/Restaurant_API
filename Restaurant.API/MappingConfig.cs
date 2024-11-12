@@ -25,6 +25,8 @@ namespace Restaurant.API
             CreateMap<OrderHeader, OrderHeaderDTO>().ReverseMap();
             CreateMap<OrderDetail, OrderDetailDTO>().ReverseMap();
 
+            CreateMap<Booking, BookingDTO>().ReverseMap();
+            CreateMap<Booking, BookingCreateDTO>().ReverseMap();
         }
     }
 }

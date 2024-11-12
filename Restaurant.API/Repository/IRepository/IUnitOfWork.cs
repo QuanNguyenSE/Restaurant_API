@@ -9,6 +9,7 @@
         ICartItemRepository CartItem { get; }
         IOrderHeaderRepository OrderHeader { get; }
         IOrderDetailRepository OrderDetail { get; }
+        IBookingRepository Booking { get; }
         Task SaveAsync();
     }
 }
