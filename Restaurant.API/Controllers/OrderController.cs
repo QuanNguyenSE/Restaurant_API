@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Restaurant.API.Models;
@@ -9,6 +10,7 @@ using System.Net;
 
 namespace Restaurant.API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class OrderController : ControllerBase
@@ -28,10 +30,9 @@ namespace Restaurant.API.Controllers
             _mapper = mapper;
         }
         [HttpGet]
-        public async Task<ActionResult<APIResponse>> GetOrders(string userId)
+        public async Task<ActionResult<APIResponse>> GetOrders()
         {
-            //var user = await _userManager.GetUserAsync(User);
-            ApplicationUser user = await _userManager.FindByIdAsync(userId);
+            var user = await _userManager.GetUserAsync(User);
 
             if (user == null)
             {
@@ -68,10 +69,9 @@ namespace Restaurant.API.Controllers
             }
         }
         [HttpGet("{id:int}", Name = "GetOrder")]
-        public async Task<ActionResult<APIResponse>> GetOrder(int id, string userId)
+        public async Task<ActionResult<APIResponse>> GetOrder(int id)
         {
-            //var user = await _userManager.GetUserAsync(User);
-            ApplicationUser user = await _userManager.FindByIdAsync(userId);
+            var user = await _userManager.GetUserAsync(User);
 
             if (user == null)
             {
@@ -129,8 +129,8 @@ namespace Restaurant.API.Controllers
         [HttpPost]
         public async Task<ActionResult<APIResponse>> CreateOrder([FromBody] OrderHeaderCreateDTO orderHeaderDTO)
         {
-            //var user = await _userManager.GetUserAsync(User);
-            ApplicationUser user = await _userManager.FindByIdAsync(orderHeaderDTO.ApplicationUserId);
+            var user = await _userManager.GetUserAsync(User);
+
             if (user == null)
             {
                 _response.IsSuccess = false;
@@ -140,6 +140,7 @@ namespace Restaurant.API.Controllers
             }
 
             ShoppingCart shoppingCart = await _unitOfWork.ShoppingCart.GetAsync(u => u.ApplicationUserId == user.Id);
+
             shoppingCart.CartItems = await _unitOfWork.CartItem.GetAllAsync(u => u.ShoppingCartId == shoppingCart.Id, includeProperties: "MenuItem");
 
             if (shoppingCart == null || shoppingCart.CartItems.Count() <= 0)

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Restaurant.API.Models;
@@ -9,6 +10,7 @@ using System.Net;
 
 namespace Restaurant.API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class BookingController : ControllerBase
@@ -28,11 +30,9 @@ namespace Restaurant.API.Controllers
             _mapper = mapper;
         }
         [HttpGet]
-        public async Task<ActionResult<APIResponse>> GetBookings(string userId)
+        public async Task<ActionResult<APIResponse>> GetBookings()
         {
-            //var user = await _userManager.GetUserAsync(User);
-            ApplicationUser user = await _userManager.FindByIdAsync(userId);
-
+            var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
                 _response.IsSuccess = false;
@@ -68,10 +68,9 @@ namespace Restaurant.API.Controllers
             }
         }
         [HttpGet("{id:int}", Name = "GetBooking")]
-        public async Task<ActionResult<APIResponse>> GetBooking(int id, string userId)
+        public async Task<ActionResult<APIResponse>> GetBooking(int id)
         {
-            //var user = await _userManager.GetUserAsync(User);
-            ApplicationUser user = await _userManager.FindByIdAsync(userId);
+            var user = await _userManager.GetUserAsync(User);
 
             if (user == null)
             {
@@ -128,9 +127,8 @@ namespace Restaurant.API.Controllers
         [HttpPost]
         public async Task<ActionResult<APIResponse>> CreateBooking([FromForm] BookingCreateDTO bookingDTO)
         {
-            //var user = await _userManager.GetUserAsync(User);
-            ApplicationUser user = await _userManager.FindByIdAsync(bookingDTO.ApplicationUserId);
-            if (user == null)
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || user.Id != bookingDTO.ApplicationUserId)
             {
                 _response.IsSuccess = false;
                 _response.ErrorMessages.Add("User is unauthorized");

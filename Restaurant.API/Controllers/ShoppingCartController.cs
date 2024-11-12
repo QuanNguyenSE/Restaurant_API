@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Restaurant.API.Models;
@@ -8,7 +9,7 @@ using System.Net;
 
 namespace Restaurant.API.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ShoppingCartController : ControllerBase
@@ -29,12 +30,11 @@ namespace Restaurant.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<APIResponse>> GetShoppingCart(string userId)
+        public async Task<ActionResult<APIResponse>> GetShoppingCart()
         {
             try
             {
-                //var user = await _userManager.GetUserAsync(User);
-                ApplicationUser user = await _userManager.FindByIdAsync(userId);
+                var user = await _userManager.GetUserAsync(User);
                 if (user == null)
                 {
                     _response.Result = null;
@@ -51,7 +51,7 @@ namespace Restaurant.API.Controllers
                     // create a shopping cart
                     shoppingCart = new ShoppingCart
                     {
-                        ApplicationUserId = userId,
+                        ApplicationUserId = user.Id,
                         CartTotal = 0,
                         ItemsTotal = 0,
                         LastUpdated = DateTime.UtcNow,
@@ -91,11 +91,10 @@ namespace Restaurant.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<APIResponse>> AddOrUpdateItemInCart(string userId, int menuItemId, int updateQuantity)
+        public async Task<ActionResult<APIResponse>> AddOrUpdateItemInCart(int menuItemId, int updateQuantity)
         {
 
-            //var user = await _userManager.GetUserAsync(User);
-            ApplicationUser user = await _userManager.FindByIdAsync(userId);
+            var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
                 _response.Result = null;
@@ -119,7 +118,7 @@ namespace Restaurant.API.Controllers
                 //create a shopping cart 
                 ShoppingCart newCart = new ShoppingCart()
                 {
-                    ApplicationUserId = userId,
+                    ApplicationUserId = user.Id,
                     CartTotal = 0,
                     ItemsTotal = 0,
                     LastUpdated = DateTime.UtcNow,
@@ -217,11 +216,10 @@ namespace Restaurant.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<APIResponse>> RemoveItemInCart(string userId, int cartItemId)
+        public async Task<ActionResult<APIResponse>> RemoveItemInCart(int cartItemId)
         {
 
-            //var user = await _userManager.GetUserAsync(User);
-            ApplicationUser user = await _userManager.FindByIdAsync(userId);
+            var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
                 _response.Result = null;

@@ -66,7 +66,5 @@ namespace Restaurant.API.Controllers
             _response.ErrorMessages.Add("UserName is exist");
             return BadRequest(_response);
         }
-
-
     }
 }
