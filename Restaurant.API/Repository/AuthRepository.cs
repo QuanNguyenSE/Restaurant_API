@@ -47,13 +47,7 @@ namespace Restaurant.API.Repository
 
         public async Task<UserDTO> RegisterAsync(RegisterRequestDTO requestDTO)
         {
-            if (!_roleManager.RoleExistsAsync(SD.Role_Admin).GetAwaiter().GetResult())
-            {
-                await _roleManager.CreateAsync(new IdentityRole(SD.Role_Admin));
-                await _roleManager.CreateAsync(new IdentityRole(SD.Role_OnlCustomer));
-                await _roleManager.CreateAsync(new IdentityRole(SD.Role_Table));
-                await _roleManager.CreateAsync(new IdentityRole(SD.Role_Staff));
-            }
+            
             ApplicationUser user = new ApplicationUser
             {
                 UserName = requestDTO.UserName,
@@ -67,17 +61,19 @@ namespace Restaurant.API.Repository
             };
 
             var result = await _userManager.CreateAsync(user, requestDTO.Password);
-
+            var userDto = _mapper.Map<UserDTO>(user);
             if (result.Succeeded)
             {
                 bool isValid = await _roleManager.RoleExistsAsync(requestDTO.Role);
                 if (isValid)
                 {
                     await _userManager.AddToRoleAsync(user, requestDTO.Role ?? SD.Role_OnlCustomer);
+                    userDto.Role = requestDTO.Role;
                 }
                 else
                 {
                     await _userManager.AddToRoleAsync(user, SD.Role_OnlCustomer);
+                    userDto.Role = SD.Role_OnlCustomer;
                 }
             }
 

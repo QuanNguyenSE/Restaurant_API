@@ -10,6 +10,8 @@
         IOrderHeaderRepository OrderHeader { get; }
         IOrderDetailRepository OrderDetail { get; }
         IBookingRepository Booking { get; }
+        IUserRepository User { get; }
+
         Task SaveAsync();
     }
 }

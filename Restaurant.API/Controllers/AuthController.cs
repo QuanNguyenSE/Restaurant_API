@@ -48,6 +48,7 @@ namespace Restaurant.API.Controllers
             var user = await _userManager.FindByNameAsync(registerDTO.UserName);
             if (user == null)
             {
+                registerDTO.Role = null;
                 var result = await _unitOfWork.AuthRepository.RegisterAsync(registerDTO);
                 if (result == null)
                 {

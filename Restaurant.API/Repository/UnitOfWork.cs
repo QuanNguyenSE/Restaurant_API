@@ -20,7 +20,7 @@ namespace Restaurant.API.Repository
         public IOrderHeaderRepository OrderHeader { get; private set; }
         public IOrderDetailRepository OrderDetail { get; private set; }
         public IBookingRepository Booking { get; private set; }
-
+        public IUserRepository User { get; private set; }
 
         public IAuthRepository AuthRepository { get; private set; }
 
@@ -39,6 +39,7 @@ namespace Restaurant.API.Repository
             OrderHeader = new OrderHeaderRepository(_db);
             OrderDetail = new OrderDetailRepository(_db);
             Booking = new BookingRepository(_db);
+            User = new UserRepository(_db);
             AuthRepository = new AuthRepository(_userManager, _roleManager, _configuration, _mapper);
         }
 
