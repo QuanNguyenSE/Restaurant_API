@@ -9,6 +9,6 @@
         public int NumberOfGuests { get; set; }
         public string? SpecialRequest { get; set; }
         public string BookingStatus { get; set; }
-        public string ApplicationUserId { get; set; }
+        
     }
 }

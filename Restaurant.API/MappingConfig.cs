@@ -27,6 +27,10 @@ namespace Restaurant.API
 
             CreateMap<Booking, BookingDTO>().ReverseMap();
             CreateMap<Booking, BookingCreateDTO>().ReverseMap();
+            CreateMap<BookingUpdateDTO, Booking>()
+                .ForMember(dest => dest.BookingStatus, opt => opt.Ignore())
+                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+
         }
     }
 }

@@ -16,34 +16,24 @@ namespace Restaurant.API.Controllers
     public class BookingController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IMapper _mapper;
         protected APIResponse _response;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public BookingController(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IMapper mapper)
+        public BookingController(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _response = new APIResponse();
             _userManager = userManager;
-            _roleManager = roleManager;
             _mapper = mapper;
         }
         [HttpGet]
         public async Task<ActionResult<APIResponse>> GetBookings()
         {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                _response.IsSuccess = false;
-                _response.ErrorMessages.Add("User is unauthorized");
-                _response.StatusCode = HttpStatusCode.Unauthorized;
-                return Unauthorized(_response);
-            }
             try
             {
+                var user = await _userManager.GetUserAsync(User);
                 IEnumerable<Booking> bookings = await _unitOfWork.Booking.GetAllAsync();
-
                 bookings = bookings.OrderByDescending(item => item.Id);
 
                 bool isAdmin = await _userManager.IsInRoleAsync(user, SD.Role_Admin);
@@ -64,41 +54,25 @@ namespace Restaurant.API.Controllers
             {
                 _response.IsSuccess = false;
                 _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages.Add(ex.Message);
                 return BadRequest(_response);
             }
         }
         [HttpGet("{id:int}", Name = "GetBooking")]
         public async Task<ActionResult<APIResponse>> GetBooking(int id)
         {
-            var user = await _userManager.GetUserAsync(User);
-
-            if (user == null)
-            {
-                _response.IsSuccess = false;
-                _response.ErrorMessages.Add("User is unauthorized");
-                _response.StatusCode = HttpStatusCode.Unauthorized;
-                return Unauthorized(_response);
-            }
             try
             {
+                var user = await _userManager.GetUserAsync(User);
                 if (id == 0)
                 {
-                    _response.IsSuccess = false;
-                    _response.ErrorMessages.Add("Id is not valid");
-                    _response.StatusCode = HttpStatusCode.BadRequest;
-                    return BadRequest(_response);
+                    throw new Exception("Id is not valid");
                 }
-
                 Booking booking = await _unitOfWork.Booking.GetAsync(u => u.Id == id);
-
                 if (booking == null)
                 {
-                    _response.IsSuccess = false;
-                    _response.ErrorMessages.Add("Not found");
-                    _response.StatusCode = HttpStatusCode.NotFound;
-                    return NotFound(_response);
+                    throw new Exception("Not found");
                 }
-
                 bool isAdmin = await _userManager.IsInRoleAsync(user, SD.Role_Admin);
                 bool isStaff = await _userManager.IsInRoleAsync(user, SD.Role_Staff);
 
@@ -108,91 +82,110 @@ namespace Restaurant.API.Controllers
                 }
                 else
                 {
-                    _response.IsSuccess = false;
-                    _response.ErrorMessages.Add("User is unauthorized");
-                    _response.StatusCode = HttpStatusCode.Unauthorized;
-                    return Unauthorized(_response);
+                    throw new Exception("User is unauthorized");
                 }
-
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             }
             catch (Exception ex)
             {
-                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.IsSuccess = false;
-                return _response;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages.Add(ex.Message);
+                return BadRequest(_response);
             }
         }
         [HttpPost]
         public async Task<ActionResult<APIResponse>> CreateBooking([FromForm] BookingCreateDTO bookingDTO)
         {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null || user.Id != bookingDTO.ApplicationUserId)
+            try
+            {
+                var user = await _userManager.GetUserAsync(User);
+                Booking newBooking = _mapper.Map<Booking>(bookingDTO);
+                newBooking.ApplicationUserId = user.Id;
+                await _unitOfWork.Booking.CreateAsync(newBooking);
+                await _unitOfWork.SaveAsync();
+
+                _response.Result = _mapper.Map<BookingDTO>(newBooking);
+                _response.StatusCode = HttpStatusCode.Created;
+                return CreatedAtRoute("GetBooking", new { id = newBooking.Id }, _response);
+
+            }
+            catch (Exception ex)
             {
                 _response.IsSuccess = false;
-                _response.ErrorMessages.Add("User is unauthorized");
-                _response.StatusCode = HttpStatusCode.Unauthorized;
-                return Unauthorized(_response);
+                _response.ErrorMessages.Add(ex.Message);
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                return BadRequest(_response);
             }
 
-            Booking newBooking = _mapper.Map<Booking>(bookingDTO);
-
-            await _unitOfWork.Booking.CreateAsync(newBooking);
-            await _unitOfWork.SaveAsync();
-
-            _response.Result = _mapper.Map<BookingDTO>(newBooking);
-            _response.StatusCode = HttpStatusCode.Created;
-            return CreatedAtRoute("GetBooking", new { id = newBooking.Id }, _response);
         }
-        //[HttpPut("{id:int}")]
-        //public async Task<ActionResult<APIResponse>> UpdateBooking(string userId, int id, [FromBody] BookingUpdateDTO bookingDTO)
-        //{
-        //    //var user = await _userManager.GetUserAsync(User);
-        //    ApplicationUser user = await _userManager.FindByIdAsync(userId);
+        [HttpPut("{id:int}")]
+        [Authorize(Roles = SD.Role_Admin + "," + SD.Role_Staff)]
+        public async Task<ActionResult<APIResponse>> UpdateBooking(int id, [FromBody] BookingUpdateDTO bookingDTO)
+        {
 
-        //    if (user == null)
-        //    {
-        //        _response.IsSuccess = false;
-        //        _response.ErrorMessages.Add("User is unauthorized");
-        //        _response.StatusCode = HttpStatusCode.Unauthorized;
-        //        return Unauthorized(_response);
-        //    }
-        //    if (id == 0 || id != bookingDTO.Id)
-        //    {
-        //        _response.IsSuccess = false;
-        //        _response.ErrorMessages.Add("Id is not valid");
-        //        _response.StatusCode = HttpStatusCode.BadRequest;
-        //        return BadRequest(_response);
-        //    }
+            try
+            {
+                if (id == 0 || id != bookingDTO.Id)
+                {
+                    throw new Exception("Id is not valid");
+                }
+                Booking booking = await _unitOfWork.Booking.GetAsync(u => u.Id == id);
+                if (booking == null)
+                {
+                    throw new Exception("Not found");
+                }
 
-        //    Booking booking = await _unitOfWork.Booking.GetAsync(u => u.Id == id);
+                booking = _mapper.Map<Booking>(bookingDTO);
+                await _unitOfWork.Booking.UpdateAsync(booking);
+                await _unitOfWork.SaveAsync();
 
-        //    if (booking == null)
-        //    {
-        //        _response.IsSuccess = false;
-        //        _response.ErrorMessages.Add("Not found");
-        //        _response.StatusCode = HttpStatusCode.NotFound;
-        //        return NotFound(_response);
-        //    }
+                if (bookingDTO.BookingStatus != null)
+                {
+                    if (!Enum.TryParse<BookingStatus>(bookingDTO.BookingStatus, out var parsedStatus))
+                    {
+                        throw new Exception("Booking status is not valid");
+                    }
 
-        //    bool isAdmin = await _userManager.IsInRoleAsync(user, SD.Role_Admin);
-        //    bool isStaff = await _userManager.IsInRoleAsync(user, SD.Role_Staff);
+                    // update status
+                    BookingStatus currentStatus = booking.BookingStatus;
+                    BookingStatus newStatus = parsedStatus;
 
-        //    if (isAdmin || isStaff)
-        //    {
-        //        _response.Result = _mapper.Map<BookingDTO>(booking);
-        //    }
-        //    else
-        //    {
-        //        _response.IsSuccess = false;
-        //        _response.ErrorMessages.Add("User is unauthorized");
-        //        _response.StatusCode = HttpStatusCode.Unauthorized;
-        //        return Unauthorized(_response);
-        //    }
-
-        //    _response.StatusCode = HttpStatusCode.OK;
-        //    return Ok(_response);
-        //}
+                    if (IsValidTransition(currentStatus, newStatus))
+                    {
+                        booking.BookingStatus = newStatus;
+                        await _unitOfWork.Booking.UpdateAsync(booking);
+                        await _unitOfWork.SaveAsync();
+                    }
+                    else
+                    {
+                        throw new Exception("Booking status is not valid");
+                    }
+                }
+                _response.StatusCode = HttpStatusCode.NoContent;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.ErrorMessages.Add(ex.Message);
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                return BadRequest(_response);
+            }
+        }
+        private bool IsValidTransition(BookingStatus currentStatus, BookingStatus newStatus)
+        {
+            return currentStatus switch
+            {
+                BookingStatus.Pending => newStatus == BookingStatus.Confirmed || newStatus == BookingStatus.Cancelled,
+                BookingStatus.Confirmed => newStatus == BookingStatus.CheckedIn || newStatus == BookingStatus.Cancelled,
+                BookingStatus.CheckedIn => newStatus == BookingStatus.Occupied || newStatus == BookingStatus.Cancelled,
+                BookingStatus.Occupied => newStatus == BookingStatus.Completed,
+                BookingStatus.Completed => false, // Cannot transition from Completed
+                BookingStatus.Cancelled => false, // Cannot transition from Canceled
+                _ => false,
+            };
+        }
     }
 }
