@@ -25,7 +25,7 @@ namespace Restaurant.API.Controllers
             try
             {
                 var orders = await _unitOfWork.OrderHeader.GetAllAsync(u => u.OrderStatus == status, tracking: false);
-                if (startDate == null)
+                if (startDate != null)
                 {
                     orders = orders.Where(u => u.OrderDate >= startDate);
                 }
@@ -55,7 +55,7 @@ namespace Restaurant.API.Controllers
             try
             {
                 var orders = await _unitOfWork.OrderHeader.GetAllAsync(u => u.OrderStatus == OrderStatus.Completed, tracking: false);
-                if (startDate == null)
+                if (startDate != null)
                 {
                     orders = orders.Where(u => u.OrderDate >= startDate);
                 }
@@ -97,7 +97,7 @@ namespace Restaurant.API.Controllers
         {
             try
             {
-                var orderItems = await _unitOfWork.OrderDetail.GetAllAsync(u => u.OrderHeader.OrderStatus == OrderStatus.Pending, tracking: false, includeProperties: "MenuItem,OrderHeader");
+                var orderItems = await _unitOfWork.OrderDetail.GetAllAsync(u => u.OrderHeader.OrderStatus == OrderStatus.Completed, tracking: false, includeProperties: "MenuItem,OrderHeader");
 
                 if (startDate != null)
                 {
@@ -108,7 +108,7 @@ namespace Restaurant.API.Controllers
                     orderItems = orderItems.Where(u => u.OrderHeader.OrderDate <= endDate);
                 }
                 var revenue = orderItems
-                    .GroupBy(u => u.MenuItem.Name)
+                    .GroupBy(u => u.MenuItem.Id)
                     .Select(g => new
                     {
                         MenuItemId = g.Key,
@@ -137,9 +137,9 @@ namespace Restaurant.API.Controllers
         {
             try
             {
-                var orderItems = await _unitOfWork.OrderDetail.GetAllAsync(includeProperties: "MenuItem.Category,OrderHeader");
+                var orderItems = await _unitOfWork.OrderDetail.GetAllAsync(u => u.OrderHeader.OrderStatus == OrderStatus.Completed, tracking: false, includeProperties: "MenuItem.Category,OrderHeader");
 
-                if (startDate == null)
+                if (startDate != null)
                 {
                     orderItems = orderItems.Where(u => u.OrderHeader.OrderDate >= startDate);
                 }
@@ -180,7 +180,7 @@ namespace Restaurant.API.Controllers
             try
             {
                 var orders = await _unitOfWork.OrderHeader.GetAllAsync(u => u.OrderStatus == status, tracking: false);
-                if (startDate == null)
+                if (startDate != null)
                 {
                     orders = orders.Where(u => u.OrderDate >= startDate);
                 }
@@ -211,7 +211,7 @@ namespace Restaurant.API.Controllers
             try
             {
                 var books = await _unitOfWork.Booking.GetAllAsync(u => u.BookingStatus == status, tracking: false);
-                if (startDate == null)
+                if (startDate != null)
                 {
                     books = books.Where(u => u.BookingDate >= startDate);
                 }
