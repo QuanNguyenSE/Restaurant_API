@@ -4,7 +4,7 @@ using Restaurant.API.Utility;
 
 namespace Restaurant.API.Data
 {
-    public static class DbInitializer 
+    public static class DbInitializer
     {
         public static async Task Initialize(ApplicationDbContext db, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
         {
@@ -28,7 +28,6 @@ namespace Restaurant.API.Data
                     State = "Vinh Bac Bo",
                     City = "Ha Noi"
                 }, "Admin123*").GetAwaiter().GetResult();
-
 
                 ApplicationUser user = db.ApplicationUsers.FirstOrDefault(u => u.Email == "admin@gmail.com");
                 userManager.AddToRoleAsync(user, SD.Role_Admin).GetAwaiter().GetResult();

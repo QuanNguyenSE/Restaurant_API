@@ -1,7 +1,5 @@
-﻿using Azure;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Restaurant.API.Data;
-using Restaurant.API.Models;
 using Restaurant.API.Repository.IRepository;
 using System.Linq.Expressions;
 
@@ -43,13 +41,17 @@ namespace Restaurant.API.Repository
             return await query.FirstOrDefaultAsync();
         }
 
-        public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>>? filter = null, string? includeProperties = null)
+        public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>>? filter = null, bool tracking = true, string? includeProperties = null)
         {
             IQueryable<T> query = _dbSet;
 
             if (filter != null)
             {
                 query = query.Where(filter);
+            }
+            if (!tracking)
+            {
+                query = query.AsNoTracking();
             }
             if (includeProperties != null)
             {
