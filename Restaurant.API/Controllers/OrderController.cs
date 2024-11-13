@@ -194,70 +194,108 @@ namespace Restaurant.API.Controllers
             return CreatedAtRoute("GetOrder", new { id = newOrderHeader.Id }, _response);
         }
 
-        //[HttpPut("{id:int}")]
-        //public async Task<ActionResult<APIResponse>> UpdateOrderHeader(int id, [FromBody] OrderHeaderUpdateDTO orderHeaderUpdateDTO)
-        //{
-        //    try
-        //    {
-        //        if (orderHeaderUpdateDTO == null || id != orderHeaderUpdateDTO.Id)
-        //        {
-        //            _response.IsSuccess = false;
-        //            _response.StatusCode = HttpStatusCode.BadRequest;
-        //            _response.ErrorMessages.Add("Id is not valid");
-        //            return BadRequest(_response);
-        //        }
-        //        OrderHeader orderFromDb = _db.OrderHeaders.FirstOrDefault(u => u.Id == id);
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult<APIResponse>> UpdateOrder(int id, [FromBody] OrderHeaderUpdateDTO orderHeaderUpdateDTO)
+        {
 
-        //        if (orderFromDb == null)
-        //        {
-        //            _response.IsSuccess = false;
-        //            _response.StatusCode = HttpStatusCode.NotFound;
-        //            _response.ErrorMessages.Add("Not Found");
+            if (orderHeaderUpdateDTO == null || id != orderHeaderUpdateDTO.Id)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages.Add("Id is not valid");
+                return BadRequest(_response);
+            }
+            OrderHeader orderFromDb = await _unitOfWork.OrderHeader.GetAsync(u => u.Id == id);
+            if (orderFromDb == null)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.NotFound;
+                _response.ErrorMessages.Add("Not Found");
+                return NotFound(_response);
+            }
 
-        //            return NotFound(_response);
-        //        }
+            //update order
+            var user = await _userManager.GetUserAsync(User);
 
-        //        if (!string.IsNullOrEmpty(orderHeaderUpdateDTO.Name))
-        //        {
-        //            orderFromDb.Name = orderHeaderUpdateDTO.Name;
-        //        }
-        //        if (!string.IsNullOrEmpty(orderHeaderUpdateDTO.PhoneNumber))
-        //        {
-        //            orderFromDb.PhoneNumber = orderHeaderUpdateDTO.PhoneNumber;
-        //        }
-        //        if (!string.IsNullOrEmpty(orderHeaderUpdateDTO.Email))
-        //        {
-        //            orderFromDb.Email = orderHeaderUpdateDTO.Email;
-        //        }
-        //        var user = await _userManager.GetUserAsync(User);
-        //        bool isAdmin = await _userManager.IsInRoleAsync(user, SD.Role_Admin);
-        //        bool isStaff = await _userManager.IsInRoleAsync(user, SD.Role_Staff);
+            bool isAdmin = await _userManager.IsInRoleAsync(user, SD.Role_Admin);
+            bool isStaff = await _userManager.IsInRoleAsync(user, SD.Role_Staff);
+            bool isCustom = await _userManager.IsInRoleAsync(user, SD.Role_OnlCustomer);
+            if (isAdmin || isStaff || isCustom)
+            {
+                if (isAdmin || isStaff)
+                {
+                    OrderStatus currentStatus = orderFromDb.OrderStatus;
+                    if (!Enum.TryParse<OrderStatus>(orderHeaderUpdateDTO.OrderStatus, out var parsedStatus))
+                    {
+                        return BadRequest("Invalid order status.");
+                    }
+                    OrderStatus newStatus = parsedStatus;
+                    if (IsValidTransition(currentStatus, newStatus))
+                    {
+                        orderFromDb.OrderStatus = newStatus;
+                    }
+                    else
+                    {
+                        _response.IsSuccess = false;
+                        _response.StatusCode = HttpStatusCode.BadRequest;
+                        _response.ErrorMessages.Add("Some thing went wrong");
+                        return BadRequest(_response);
+                    }
 
-        //        if (isAdmin || isStaff)
-        //        {
+                }
+                else
+                {
 
-        //            if (!string.IsNullOrEmpty(orderHeaderUpdateDTO.OrderStatus))
-        //            {
-        //                orderFromDb.OrderStatus = orderHeaderUpdateDTO.OrderStatus;
-        //            }
-        //            if (!string.IsNullOrEmpty(orderHeaderUpdateDTO.PaymentIntentId))
-        //            {
-        //                orderFromDb.PaymentIntentId = orderHeaderUpdateDTO.PaymentIntentId;
-        //            }
-        //        }
-        //        _db.SaveChanges();
-        //        _response.StatusCode = HttpStatusCode.NoContent;
-        //        _response.IsSuccess = true;
-        //        return Ok(_response);
+                    if (orderFromDb.OrderStatus == OrderStatus.Cancelled || orderFromDb.OrderStatus == OrderStatus.Completed)
+                    {
+                        _response.IsSuccess = false;
+                        _response.StatusCode = HttpStatusCode.BadRequest;
+                        _response.ErrorMessages.Add("You cannot update a completed or cancelled order.");
+                        return BadRequest(_response);
+                    }
 
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _response.IsSuccess = false;
-        //        _response.ErrorMessages
-        //             = new List<string>() { ex.ToString() };
-        //    }
-        //    return _response;
-        //}
+                    if (orderHeaderUpdateDTO.DeliveryInfo != null)
+                    {
+                        orderFromDb.DeliveryInfo = orderHeaderUpdateDTO.DeliveryInfo;
+
+                    }
+                }
+
+                await _unitOfWork.SaveAsync();
+                _response.StatusCode = HttpStatusCode.NoContent;
+                return Ok(_response);
+            }
+            else
+            {
+                _response.IsSuccess = false;
+                _response.ErrorMessages.Add("You do not have permission to update this order.");
+                _response.StatusCode = HttpStatusCode.Unauthorized;
+                return Unauthorized(_response);
+            }
+        }
+        private bool IsValidTransition(OrderStatus currentStatus, OrderStatus newStatus)
+        {
+            switch (currentStatus)
+            {
+                case OrderStatus.Pending:
+                    return newStatus == OrderStatus.Confirmed || newStatus == OrderStatus.Cancelled;
+
+                case OrderStatus.Confirmed:
+                    return newStatus == OrderStatus.BeingCooked || newStatus == OrderStatus.Cancelled;
+
+                case OrderStatus.BeingCooked:
+                    return newStatus == OrderStatus.ReadyForPickUp;
+
+                case OrderStatus.ReadyForPickUp:
+                    return newStatus == OrderStatus.Completed;
+
+                case OrderStatus.Completed:
+                    return false;
+                case OrderStatus.Cancelled:
+                    return false;
+                default:
+                    return false;
+            }
+        }
     }
 }
