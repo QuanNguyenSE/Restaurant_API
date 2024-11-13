@@ -31,15 +31,16 @@ namespace Restaurant.API.Repository
             var user = await _userManager.FindByNameAsync(requestDTO.UserName);
             if (user == null || !await _userManager.CheckPasswordAsync(user, requestDTO.Password))
             {
-                return null; // Trả về null nếu đăng nhập không thành công
+                return null;
             }
 
             var roles = await _userManager.GetRolesAsync(user);
             var token = GenerateJwtToken(user, roles.FirstOrDefault());
-
+            UserDTO userDTO = _mapper.Map<UserDTO>(user);
+            userDTO.Role = roles.FirstOrDefault();
             return new LoginResponseDTO
             {
-                User = _mapper.Map<UserDTO>(user),
+                User = userDTO,
                 Token = token
             };
         }
