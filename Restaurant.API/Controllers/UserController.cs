@@ -100,7 +100,7 @@ namespace Restaurant.API.Controllers
                     throw new Exception("UserName exists");
                 }
 
-                var userDto = await _unitOfWork.AuthRepository.RegisterAsync(requestDTO);
+                var userDto = await _unitOfWork.Auth.RegisterAsync(requestDTO);
 
                 if (userDto == null)
                 {

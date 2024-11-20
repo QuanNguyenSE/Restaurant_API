@@ -16,7 +16,7 @@ namespace Restaurant.API.Models
         [Required]
         public int NumberOfGuests { get; set; }
         public string? SpecialRequest { get; set; } 
-        public DateTime DateCreated { get; set; } = DateTime.UtcNow; 
+        public DateTime DateCreated { get; set; } = DateTime.Now; 
         public BookingStatus BookingStatus { get; set; } = BookingStatus.Pending;
         [Required]
         public string ApplicationUserId { get; set; }

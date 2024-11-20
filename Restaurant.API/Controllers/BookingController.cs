@@ -63,7 +63,6 @@ namespace Restaurant.API.Controllers
         {
             try
             {
-                var user = await _userManager.GetUserAsync(User);
                 if (id == 0)
                 {
                     throw new Exception("Id is not valid");
@@ -73,6 +72,7 @@ namespace Restaurant.API.Controllers
                 {
                     throw new Exception("Not found");
                 }
+                var user = await _userManager.GetUserAsync(User);
                 bool isAdmin = await _userManager.IsInRoleAsync(user, SD.Role_Admin);
                 bool isStaff = await _userManager.IsInRoleAsync(user, SD.Role_Staff);
 
@@ -124,20 +124,19 @@ namespace Restaurant.API.Controllers
         [Authorize(Roles = SD.Role_Admin + "," + SD.Role_Staff)]
         public async Task<ActionResult<APIResponse>> UpdateBooking(int id, [FromBody] BookingUpdateDTO bookingDTO)
         {
-
             try
             {
                 if (id == 0 || id != bookingDTO.Id)
                 {
                     throw new Exception("Id is not valid");
                 }
-                Booking booking = await _unitOfWork.Booking.GetAsync(u => u.Id == id);
+                Booking booking = await _unitOfWork.Booking.GetAsync(u => u.Id == id, tracking: false);
                 if (booking == null)
                 {
                     throw new Exception("Not found");
                 }
 
-                booking = _mapper.Map<Booking>(bookingDTO);
+                _mapper.Map(bookingDTO, booking);
                 await _unitOfWork.Booking.UpdateAsync(booking);
                 await _unitOfWork.SaveAsync();
 

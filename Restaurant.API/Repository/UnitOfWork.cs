@@ -22,7 +22,7 @@ namespace Restaurant.API.Repository
         public IBookingRepository Booking { get; private set; }
         public IUserRepository User { get; private set; }
 
-        public IAuthRepository AuthRepository { get; private set; }
+        public IAuthRepository Auth { get; private set; }
 
         public UnitOfWork(ApplicationDbContext db, IConfiguration configuration, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IMapper mapper)
         {
@@ -40,7 +40,7 @@ namespace Restaurant.API.Repository
             OrderDetail = new OrderDetailRepository(_db);
             Booking = new BookingRepository(_db);
             User = new UserRepository(_db);
-            AuthRepository = new AuthRepository(_userManager, _roleManager, _configuration, _mapper);
+            Auth = new AuthRepository(_userManager, _roleManager, _configuration, _mapper);
         }
 
         public async Task SaveAsync()

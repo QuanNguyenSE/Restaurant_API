@@ -47,7 +47,7 @@ namespace Restaurant.API.Repository
 
         public async Task<UserDTO> RegisterAsync(RegisterRequestDTO requestDTO)
         {
-            
+
             ApplicationUser user = new ApplicationUser
             {
                 UserName = requestDTO.UserName,
@@ -75,9 +75,11 @@ namespace Restaurant.API.Repository
                     await _userManager.AddToRoleAsync(user, SD.Role_OnlCustomer);
                     userDto.Role = SD.Role_OnlCustomer;
                 }
+                return userDto;
             }
+            else
+                return null;
 
-            return _mapper.Map<UserDTO>(user);
         }
 
         private string GenerateJwtToken(ApplicationUser user, string role)

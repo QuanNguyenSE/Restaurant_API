@@ -272,7 +272,7 @@ namespace Restaurant.API.Migrations
 
                     b.HasIndex("ApplicationUserId");
 
-                    b.ToTable("Bookings");
+                    b.ToTable("Bookings", (string)null);
                 });
 
             modelBuilder.Entity("Restaurant.API.Models.CartItem", b =>
@@ -301,7 +301,7 @@ namespace Restaurant.API.Migrations
 
                     b.HasIndex("ShoppingCartId");
 
-                    b.ToTable("CartItems");
+                    b.ToTable("CartItems", (string)null);
                 });
 
             modelBuilder.Entity("Restaurant.API.Models.Category", b =>
@@ -322,7 +322,7 @@ namespace Restaurant.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
 
                     b.HasData(
                         new
@@ -389,7 +389,7 @@ namespace Restaurant.API.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("MenuItems");
+                    b.ToTable("MenuItems", (string)null);
 
                     b.HasData(
                         new
@@ -520,7 +520,7 @@ namespace Restaurant.API.Migrations
 
                     b.HasIndex("OrderHeaderId");
 
-                    b.ToTable("OrderDetails");
+                    b.ToTable("OrderDetails", (string)null);
                 });
 
             modelBuilder.Entity("Restaurant.API.Models.OrderHeader", b =>
@@ -554,7 +554,7 @@ namespace Restaurant.API.Migrations
 
                     b.HasIndex("ApplicationUserId");
 
-                    b.ToTable("OrderHeaders");
+                    b.ToTable("OrderHeaders", (string)null);
                 });
 
             modelBuilder.Entity("Restaurant.API.Models.ShoppingCart", b =>
@@ -576,7 +576,7 @@ namespace Restaurant.API.Migrations
 
                     b.HasIndex("ApplicationUserId");
 
-                    b.ToTable("ShoppingCarts");
+                    b.ToTable("ShoppingCarts", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -696,7 +696,7 @@ namespace Restaurant.API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("Restaurant.API.Models.DeliveryInfo", "DeliveryInfo", b1 =>
+                    b.OwnsOne("Restaurant.API.Models.OrderHeader.DeliveryInfo#Restaurant.API.Models.DeliveryInfo", "DeliveryInfo", b1 =>
                         {
                             b1.Property<int>("OrderHeaderId")
                                 .HasColumnType("int");
@@ -723,7 +723,7 @@ namespace Restaurant.API.Migrations
 
                             b1.HasKey("OrderHeaderId");
 
-                            b1.ToTable("OrderHeaders");
+                            b1.ToTable("OrderHeaders", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("OrderHeaderId");

@@ -4,7 +4,7 @@
     {
         IMenuItemRepository MenuItem { get; }
         ICategoryRepository Category { get; }
-        IAuthRepository AuthRepository { get; }
+        IAuthRepository Auth { get; }
         IShoppingCartRepository ShoppingCart { get; }
         ICartItemRepository CartItem { get; }
         IOrderHeaderRepository OrderHeader { get; }

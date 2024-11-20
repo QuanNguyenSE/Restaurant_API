@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Restaurant.API.Models;
 using Restaurant.API.Models.DTO;
 using Restaurant.API.Repository.IRepository;
+using Restaurant.API.Utility;
 using System.Net;
 
 namespace Restaurant.API.Controllers
@@ -27,45 +28,62 @@ namespace Restaurant.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<APIResponse>> Login([FromBody] LoginRequestDTO resquestDTO)
         {
-            LoginResponseDTO loginReponse = await _unitOfWork.AuthRepository.LoginAsync(resquestDTO);
-            if (loginReponse == null)
+            LoginResponseDTO loginReponse = await _unitOfWork.Auth.LoginAsync(resquestDTO);
+            try
+            {
+                if (loginReponse == null)
+                {
+                    throw new Exception("Username or password is incorrect");
+                }
+                _response.IsSuccess = true;
+                _response.StatusCode = HttpStatusCode.OK;
+                _response.Result = loginReponse;
+                return Ok(_response);
+            }
+            catch (Exception ex)
             {
                 _response.IsSuccess = false;
                 _response.StatusCode = HttpStatusCode.BadRequest;
-                _response.ErrorMessages.Add("Username or password is incorrect");
+                _response.ErrorMessages.Add(ex.Message);
                 return BadRequest(_response);
             }
-            _response.IsSuccess = true;
-            _response.StatusCode = HttpStatusCode.OK;
-            _response.Result = loginReponse;
-            return Ok(_response);
+
         }
+
         [HttpPost("register")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<APIResponse>> Register([FromBody] RegisterRequestDTO registerDTO)
         {
-            var user = await _userManager.FindByNameAsync(registerDTO.UserName);
-            if (user == null)
+            try
             {
-                registerDTO.Role = null;
-                var result = await _unitOfWork.AuthRepository.RegisterAsync(registerDTO);
-                if (result == null)
+                var user = await _userManager.FindByNameAsync(registerDTO.UserName);
+                if (user == null)
                 {
-                    _response.IsSuccess = false;
-                    _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.ErrorMessages.Add("Error while registering");
-                    return BadRequest(_response);
+                    registerDTO.Role = SD.Role_OnlCustomer;
+                    var result = await _unitOfWork.Auth.RegisterAsync(registerDTO);
+                    if (result == null)
+                    {
+                        throw new Exception("Error while registering");
+                    }
+                    _response.IsSuccess = true;
+                    _response.StatusCode = HttpStatusCode.OK;
+                    _response.Result = result;
+                    return Ok(_response);
                 }
-                _response.IsSuccess = true;
-                _response.StatusCode = HttpStatusCode.OK;
-                _response.Result = result;
-                return Ok(_response);
+                else
+                {
+                    throw new Exception("UserName is exist");
+                }
             }
-            _response.IsSuccess = false;
-            _response.StatusCode = HttpStatusCode.BadRequest;
-            _response.ErrorMessages.Add("UserName is exist");
-            return BadRequest(_response);
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.ErrorMessages.Add(ex.Message);
+                return BadRequest(_response);
+            }
+
         }
     }
 }
