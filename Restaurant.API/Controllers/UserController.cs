@@ -31,20 +31,12 @@ namespace Restaurant.API.Controllers
             try
             {
                 var users = await _userManager.Users.ToListAsync();
-                var usersWithRoles = new List<UserDTO>();
+                
                 foreach (var user in users)
                 {
-                    var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault();
-
-                    usersWithRoles.Add(new UserDTO
-                    {
-                        Id = user.Id,
-                        UserName = user.UserName,
-                        Name = user.Name,
-                        Role = role
-                    });
+                    user.Role = (await _userManager.GetRolesAsync(user)).FirstOrDefault();
                 }
-                _response.Result = usersWithRoles;
+                _response.Result = users;
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             }
@@ -68,15 +60,9 @@ namespace Restaurant.API.Controllers
                     throw new Exception("Not found");
                 }
 
-                var userDto = new UserDTO
-                {
-                    Id = user.Id,
-                    UserName = user.UserName,
-                    Name = user.Name,
-                    Role = (await _userManager.GetRolesAsync(user)).FirstOrDefault()
+                user.Role = (await _userManager.GetRolesAsync(user)).FirstOrDefault();
 
-                };
-                _response.Result = userDto;
+                _response.Result = user;
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             }
